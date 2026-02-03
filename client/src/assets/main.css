@@ -1,0 +1,17 @@
+@import 'v-calendar/style.css';
+@import "tailwindcss";
+
+@theme {
+    --color-primary: #8b5e3c;
+    --color-primary-light: #a67c52;
+    --color-primary-dark: #6f4b30;
+    --color-secondary: #e6ccb2;
+    --color-surface: #fcf9f4;
+    --font-outfit: "Outfit", sans-serif;
+}
+
+body {
+    background-color: var(--color-surface);
+    color: #1f2937;
+    font-family: var(--font-outfit);
+}

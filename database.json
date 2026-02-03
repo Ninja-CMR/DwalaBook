@@ -1,0 +1,344 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Lanou Shop",
+      "email": "lanoushop@gmail.com",
+      "password": "$2b$10$QjKXAaE0mR8dNwtWUU//guyPZuE6YwgdmhGASHvvnCQfN0vi9WNiC",
+      "created_at": "2026-01-27T17:16:42.617Z"
+    },
+    {
+      "id": 2,
+      "name": "Cyrille Ojit",
+      "email": "lanoshop@gmail.com",
+      "password": "$2b$10$tzcYgkaEzQ/IrZCsLIQs.eLL/LDWsnuWr1WSFRxLsFc9/9LeBAZSK",
+      "created_at": "2026-01-27T17:19:22.938Z"
+    },
+    {
+      "id": 3,
+      "name": "Perspiciatis nostru",
+      "email": "vyxutyqeh@mailinator.com",
+      "password": "$2b$10$RY5k9V3dFpl8cMrYXgi3JeUo0tm.Lkoee0rxHtPduAX98I8A56E16",
+      "created_at": "2026-01-27T17:26:53.057Z"
+    },
+    {
+      "id": 4,
+      "name": "Quia animi nobis co",
+      "email": "kybigy@mailinator.com",
+      "password": "$2b$10$kkTo2EwpNxJ32KlcobiRUOTi2ztmOSWffxmVwUaG7M9G/J5FSx8si",
+      "created_at": "2026-01-27T17:27:05.761Z"
+    },
+    {
+      "id": 5,
+      "name": "Nulla quia non aliqu",
+      "email": "siqipuxodo@mailinator.com",
+      "password": "$2b$10$e4TGCuTkue61WsP9GQdzdunQzOXZ9S1vle3ptmGbnNY1NFIZTtYmO",
+      "created_at": "2026-01-27T17:33:56.389Z"
+    },
+    {
+      "id": 6,
+      "name": "gezgfzfsdf",
+      "email": "lanofdfshop@gmail.com",
+      "password": "$2b$10$DrgrqyEMyC8J31YREoEEDeMi7p4f25HMYVmrZ4Owo6zK2itDupdj2",
+      "is_premium": false,
+      "created_at": "2026-01-27T17:42:19.930Z"
+    },
+    {
+      "id": 7,
+      "name": "Niete Group",
+      "email": "nieteGroup@gmail.com",
+      "password": "$2b$10$vxUN5.GcDHrkRCTC35pQ/.B3kxgpA6XQFLpSjw6od2Ks6c.pM8oc2",
+      "is_premium": false,
+      "created_at": "2026-01-27T18:08:55.151Z"
+    },
+    {
+      "id": 8,
+      "name": "AminSelect ",
+      "email": "amin@gmail.com",
+      "password": "$2b$10$NZw8RgojQYKjIt0SaS85yeP5VpTXdIRznCLmOdpZA3HBMTNMgV8Wq",
+      "is_premium": false,
+      "created_at": "2026-01-28T12:46:56.645Z"
+    },
+    {
+      "id": 9,
+      "name": "Sandrine Coiffure",
+      "email": "sandrinecoiffure@gmail.com",
+      "password": "$2b$10$MQHsrlsgi1kOCQHN.U6dq.Rqei59j/ay84pDXJyY/0wbFECqeH0DO",
+      "plan": "free",
+      "appointment_limit": 5,
+      "created_at": "2026-02-02T19:37:20.487Z"
+    }
+  ],
+  "appointments": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "customer_name": "Patrick Roland",
+      "phone": "699439022",
+      "date": "2026-01-29T21:18:00.000Z",
+      "status": "scheduled",
+      "created_at": "2026-01-27T17:18:27.958Z"
+    },
+    {
+      "id": 2,
+      "user_id": 2,
+      "customer_name": "Gaster",
+      "phone": "696172899",
+      "date": "2026-01-28T22:25:00.000Z",
+      "status": "scheduled",
+      "created_at": "2026-01-27T17:25:50.938Z"
+    },
+    {
+      "id": 3,
+      "user_id": 7,
+      "customer_name": "Henry ",
+      "phone": "696172899",
+      "date": "2026-01-26T11:01:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "confirmed",
+      "created_at": "2026-01-27T19:01:52.775Z"
+    },
+    {
+      "id": 4,
+      "user_id": 7,
+      "customer_name": "Loic Coiffure",
+      "phone": "696174520",
+      "date": "2026-01-29T11:54:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "confirmed",
+      "created_at": "2026-01-27T19:54:13.189Z"
+    },
+    {
+      "id": 5,
+      "user_id": 7,
+      "customer_name": "Steve ",
+      "phone": "696751204",
+      "date": "2026-01-31T16:54:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "confirmed",
+      "created_at": "2026-01-27T19:54:50.645Z"
+    },
+    {
+      "id": 6,
+      "user_id": 7,
+      "customer_name": "Baily Gateau",
+      "phone": "696152781",
+      "date": "2026-03-04T22:55:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "confirmed",
+      "created_at": "2026-01-27T19:55:47.579Z"
+    },
+    {
+      "id": 7,
+      "user_id": 7,
+      "customer_name": "Pirre Maath",
+      "phone": "698745216",
+      "date": "2026-02-20T17:56:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "scheduled",
+      "created_at": "2026-01-27T19:56:19.709Z"
+    },
+    {
+      "id": 8,
+      "user_id": 8,
+      "customer_name": "Julien ",
+      "phone": "669451255",
+      "date": "2026-01-31T16:47:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "confirmed",
+      "created_at": "2026-01-28T12:48:04.873Z"
+    },
+    {
+      "id": 9,
+      "user_id": 8,
+      "customer_name": "Alias laboriosam at",
+      "phone": "+1 (926) 447-2913",
+      "date": "1986-12-25T12:59:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "scheduled",
+      "created_at": "2026-01-28T12:48:18.321Z"
+    },
+    {
+      "id": 10,
+      "user_id": 8,
+      "customer_name": "Molestias sit volupt",
+      "phone": "+1 (126) 798-4553",
+      "date": "1985-11-08T20:22:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "scheduled",
+      "created_at": "2026-01-28T12:50:35.939Z"
+    },
+    {
+      "id": 11,
+      "user_id": 8,
+      "customer_name": "Roland ",
+      "phone": "56877456",
+      "date": "2026-01-29T17:52:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "scheduled",
+      "created_at": "2026-01-28T12:52:22.281Z"
+    },
+    {
+      "id": 12,
+      "user_id": 8,
+      "customer_name": "Julien ",
+      "phone": "458464646",
+      "date": "2026-01-31T18:52:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "scheduled",
+      "created_at": "2026-01-28T12:52:47.374Z"
+    },
+    {
+      "id": 13,
+      "user_id": 9,
+      "customer_name": "Lorient ",
+      "phone": "658147966",
+      "date": "2026-02-25T11:39:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "scheduled",
+      "created_at": "2026-02-02T19:39:17.516Z"
+    },
+    {
+      "id": 14,
+      "user_id": 9,
+      "customer_name": "Sorelle manicure",
+      "phone": "699439022",
+      "date": "2026-03-06T13:41:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "confirmed",
+      "created_at": "2026-02-02T19:41:08.109Z"
+    },
+    {
+      "id": 15,
+      "user_id": 9,
+      "customer_name": "Eligendi elit praes",
+      "phone": "+1 (737) 473-8289",
+      "date": "1983-03-16T00:35:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "confirmed",
+      "created_at": "2026-02-02T19:41:40.044Z"
+    },
+    {
+      "id": 16,
+      "user_id": 9,
+      "customer_name": "Rolant",
+      "phone": "698745125",
+      "date": "2026-02-25T11:42:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "confirmed",
+      "created_at": "2026-02-02T19:42:07.249Z"
+    },
+    {
+      "id": 17,
+      "user_id": 9,
+      "customer_name": "Satine ",
+      "phone": "",
+      "date": "2026-03-11T13:42:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "scheduled",
+      "created_at": "2026-02-02T19:42:44.861Z"
+    }
+  ],
+  "payments": [
+    {
+      "id": 1,
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_QKYKRUGS4",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending",
+      "created_at": "2026-02-02T20:21:56.519Z"
+    },
+    {
+      "id": 2,
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_EZIWP7L5C",
+      "amount": 10000,
+      "plan": "pro",
+      "status": "pending",
+      "created_at": "2026-02-02T20:22:12.616Z"
+    },
+    {
+      "id": 3,
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_DZ7P58PZ3",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending",
+      "created_at": "2026-02-02T20:35:05.271Z"
+    },
+    {
+      "id": 4,
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_2QBEP3NB3",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending",
+      "created_at": "2026-02-02T20:38:28.759Z"
+    },
+    {
+      "id": 5,
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_INYTN45MW",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending",
+      "created_at": "2026-02-02T20:38:57.326Z"
+    },
+    {
+      "id": 6,
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_F9O7Q3ULU",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending",
+      "created_at": "2026-02-02T21:19:55.676Z"
+    },
+    {
+      "id": 7,
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_IT5Q0LY91",
+      "amount": 10000,
+      "plan": "pro",
+      "status": "pending",
+      "created_at": "2026-02-02T21:20:39.396Z"
+    },
+    {
+      "id": 8,
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_Y4Q1763M3",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending",
+      "created_at": "2026-02-03T07:21:46.900Z"
+    },
+    {
+      "id": 9,
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_G3265F5PA",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending",
+      "created_at": "2026-02-03T07:22:04.377Z"
+    },
+    {
+      "id": 10,
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_6ASN703P8",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending",
+      "created_at": "2026-02-03T07:28:21.200Z"
+    }
+  ]
+}

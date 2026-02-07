@@ -1,48 +1,89 @@
 import { query } from '../../databases';
+import Stripe from 'stripe';
 
-export const initiateMonetbilPayment = async (userId: number, plan: 'starter' | 'pro', amount: number) => {
-    // In a real scenario, you would call Monetbil API here.
-    // We'll simulate the transaction ID and return a fake redirect URL for demo.
-    const transactionId = `TXN_${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+const stripe = process.env.STRIPE_SECRET_KEY
+    ? new Stripe(process.env.STRIPE_SECRET_KEY)
+    : null;
 
+import { sendPaymentDeclarationAdminNotification } from '../email/email.service';
+
+// Manual Payment Declaration (OM/MOMO)
+export const declareManualPayment = async (userId: number, plan: 'starter' | 'pro', amount: number, transactionId: string, phone: string) => {
+    console.log(`[PAYMENT SERVICE] Declaring manual payment for user ${userId}, txn: ${transactionId}`);
+
+    // Check if a pending payment already exists for this transaction ID to avoid duplicates
+    const existing = await query('SELECT * FROM PAYMENTS WHERE transaction_id = $1', [transactionId]);
+    if (existing.rows.length > 0) {
+        console.warn(`[PAYMENT SERVICE] Duplicate transaction detected: ${transactionId}`);
+        throw new Error('Une transaction avec cet ID existe déjà.');
+    }
+
+    // Get user email
+    const userRes = await query('SELECT email FROM USERS WHERE id = $1', [userId]);
+    const userEmail = userRes.rows[0]?.email;
+
+    // Insert pending payment
     await query(
-        'INSERT INTO PAYMENTS (user_id, provider, transaction_id, amount, plan, status) VALUES ($1, $2, $3, $4, $5, $6)',
-        [userId, 'monetbil', transactionId, amount, plan, 'pending']
+        'INSERT INTO PAYMENTS (user_id, provider, transaction_id, amount, plan, status, phone) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [userId, 'manual', transactionId, amount, plan, 'pending_review', phone]
     );
 
-    const serviceKey = process.env.MONETBIL_SERVICE_KEY;
-    const paymentMode = process.env.PAYMENT_MODE || 'test';
-
-    // Test mode: local redirect with auto-success
-    if (paymentMode === 'test') {
-        const mockUrl = `http://localhost:5173/payment-result?status=success&transaction_id=${transactionId}&plan=${plan}`;
-        return {
-            payment_url: mockUrl,
-            transaction_id: transactionId,
-            test_mode: true
-        };
-    }
-
-    if (!serviceKey || serviceKey === 'YOUR_KEY') {
-        throw new Error('Clé de service Monetbil non configurée en mode production.');
-    }
-
-    // Production Monetbil Widget URL
-    const returnUrl = encodeURIComponent('http://localhost:5173/payment-result');
-    const paymentUrl = `https://www.monetbil.com/pay/v2.1/widget?service_key=${serviceKey}&amount=${amount}&item_name=Plan_${plan}&transaction_id=${transactionId}&return_url=${returnUrl}`;
+    // Send email to Admin
+    console.log(`[PAYMENT SERVICE] Sending admin notification for txn: ${transactionId}`);
+    await sendPaymentDeclarationAdminNotification(amount, plan, transactionId, userEmail);
+    console.log(`[PAYMENT SERVICE] Notification sent (or mocked).`);
 
     return {
-        payment_url: paymentUrl,
-        transaction_id: transactionId,
+        message: 'Paiement déclaré avec succès. En attente de validation par un administrateur.',
+        status: 'pending_review',
+        transaction_id: transactionId
+    };
+};
+
+// Stripe Integration
+export const initiateStripePayment = async (userId: number, plan: 'starter' | 'pro', amount: number) => {
+    if (!stripe) {
+        throw new Error('Stripe n\'est pas configuré sur le serveur.');
+    }
+
+    const priceId = plan === 'starter' ? process.env.STRIPE_PRICE_ID_STARTER : process.env.STRIPE_PRICE_ID_PRO;
+
+    // For simplicity in this demo, we create a Checkout Session
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+            {
+                price_data: {
+                    currency: 'eur', // Stripe usually handles major currencies better
+                    product_data: {
+                        name: `Abonnement DwalaBook ${plan.toUpperCase()}`,
+                    },
+                    unit_amount: plan === 'starter' ? 500 : 1000, // 5€ / 10€ approx equivalent
+                },
+                quantity: 1,
+            },
+        ],
+        mode: 'payment', // or 'subscription' if you set up recurring in Stripe
+        success_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/payment-result?status=success&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/payment-result?status=failure`,
+        metadata: {
+            userId: userId.toString(),
+            plan: plan
+        }
+    });
+
+    return {
+        payment_url: session.url,
+        transaction_id: session.id,
         test_mode: false
     };
 };
 
-export const updatePaymentStatus = async (transactionId: string, status: 'success' | 'failed') => {
+export const updatePaymentStatus = async (transactionId: string, status: 'success' | 'failed' | 'approved') => {
     const res = await query('UPDATE PAYMENTS SET status = $1 WHERE transaction_id = $2 RETURNING *', [status, transactionId]);
     const payment = res.rows[0];
 
-    if (payment && status === 'success') {
+    if (payment && (status === 'success' || status === 'approved')) {
         const plan = payment.plan;
         const limit = 999999;
         const expireAt = new Date();
@@ -53,6 +94,7 @@ export const updatePaymentStatus = async (transactionId: string, status: 'succes
                 'UPDATE USERS SET plan = $1, appointment_limit = $2, plan_expire_at = $3 WHERE id = $4',
                 [plan, limit, expireAt.toISOString(), payment.user_id]
             );
+            console.log(`[SUBSCRIPTION] User ${payment.user_id} upgraded to ${plan}`);
         }
     }
     return payment;
@@ -60,6 +102,5 @@ export const updatePaymentStatus = async (transactionId: string, status: 'succes
 
 export const checkExpirations = async () => {
     // This would be run by a cron job in production
-    // For now, we'll just expose it as a function
     // Logic: Find users where plan_expire_at < NOW() and reset to free
 };

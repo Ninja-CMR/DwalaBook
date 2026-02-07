@@ -67,6 +67,16 @@
       "plan": "free",
       "appointment_limit": 5,
       "created_at": "2026-02-02T19:37:20.487Z"
+    },
+    {
+      "id": 10,
+      "name": "Lao Sarl",
+      "email": "laosarl@gmail.com",
+      "password": "$2b$10$XzbdtCL4oHgX19Mod/ZwCe2sLGuE60G/VcdzGUntaagZ2qwXlq4n2",
+      "plan": "pro",
+      "appointment_limit": 999999,
+      "plan_expire_at": "2026-03-09T12:59:22.975Z",
+      "created_at": "2026-02-07T11:18:24.565Z"
     }
   ],
   "appointments": [
@@ -237,6 +247,61 @@
       "staff_name": "Équipe DwalaBook",
       "status": "scheduled",
       "created_at": "2026-02-02T19:42:44.861Z"
+    },
+    {
+      "id": 18,
+      "user_id": 10,
+      "customer_name": "Julien",
+      "phone": "699439022",
+      "email": null,
+      "date": "2026-02-20T16:19:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "confirmed",
+      "created_at": "2026-02-07T11:19:08.157Z"
+    },
+    {
+      "id": 19,
+      "user_id": 10,
+      "customer_name": "Agnes ",
+      "phone": "690239548",
+      "email": null,
+      "date": "2026-03-08T13:19:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "confirmed",
+      "created_at": "2026-02-07T11:19:39.729Z"
+    },
+    {
+      "id": 20,
+      "user_id": 10,
+      "customer_name": "Robin ",
+      "phone": "674350231",
+      "email": null,
+      "date": "2026-02-17T09:20:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "confirmed",
+      "created_at": "2026-02-07T11:20:09.999Z"
+    },
+    {
+      "id": 21,
+      "user_id": 10,
+      "customer_name": "Loic",
+      "phone": "698435250",
+      "email": null,
+      "date": "2026-02-25T15:20:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "confirmed",
+      "created_at": "2026-02-07T11:20:49.896Z"
+    },
+    {
+      "id": 22,
+      "user_id": 10,
+      "customer_name": "Mama Olive",
+      "phone": "65409245I",
+      "email": null,
+      "date": "2026-03-05T15:21:00.000Z",
+      "staff_name": "Équipe DwalaBook",
+      "status": "confirmed",
+      "created_at": "2026-02-07T11:21:16.186Z"
     }
   ],
   "payments": [
@@ -339,6 +404,59 @@
       "plan": "starter",
       "status": "pending",
       "created_at": "2026-02-03T07:28:21.200Z"
+    },
+    {
+      "id": 11,
+      "user_id": 10,
+      "provider": "manual",
+      "transaction_id": "PP23456",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending_review",
+      "created_at": "2026-02-07T11:58:55.119Z"
+    },
+    {
+      "id": 12,
+      "user_id": 10,
+      "provider": "manual",
+      "transaction_id": "PP2340",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending_review",
+      "created_at": "2026-02-07T12:00:29.198Z"
+    },
+    {
+      "id": 13,
+      "user_id": 10,
+      "provider": "manual",
+      "transaction_id": "PP23490",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending_review",
+      "phone": "696173490",
+      "created_at": "2026-02-07T12:03:34.133Z"
+    },
+    {
+      "id": 14,
+      "user_id": 10,
+      "provider": "manual",
+      "transaction_id": "PP093842",
+      "amount": 10000,
+      "plan": "pro",
+      "status": "pending_review",
+      "phone": "690345421",
+      "created_at": "2026-02-07T12:31:12.211Z"
+    },
+    {
+      "id": 15,
+      "user_id": 10,
+      "provider": "manual",
+      "transaction_id": "PP20984751",
+      "amount": 10000,
+      "plan": "pro",
+      "status": "approved",
+      "phone": "698342156",
+      "created_at": "2026-02-07T12:56:07.755Z"
     }
   ]
 }

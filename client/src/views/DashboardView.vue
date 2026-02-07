@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import AppLayout from '../components/AppLayout.vue';
-import PaymentModal from '../components/PaymentModal.vue';
 import { onMounted, computed, ref } from 'vue';
 import { useAppointmentStore } from '../stores/appointments.store';
 import { useAuthStore } from '../stores/auth.store';
@@ -24,7 +23,6 @@ import {
 const appointmentStore = useAppointmentStore();
 const authStore = useAuthStore();
 const router = useRouter();
-const showPaymentModal = ref(false);
 
 onMounted(() => {
   appointmentStore.fetchAppointments();
@@ -89,10 +87,6 @@ const usagePercentage = computed(() => Math.min((appointmentStore.appointments.l
 const isLimitReached = computed(() => authStore.isFree && appointmentStore.appointments.length >= 5);
 const currentLimit = computed(() => authStore.user?.appointment_limit || 5);
 
-const handlePaymentSuccess = () => {
-  showPaymentModal.value = false;
-  // State is updated inside the modal simulation
-};
 </script>
 
 <template>
@@ -375,8 +369,5 @@ const handlePaymentSuccess = () => {
         </div>
       </div>
     </div>
-
-    <!-- MoMo / Orange Payment -->
-    <PaymentModal v-if="showPaymentModal" @close="showPaymentModal = false" @success="handlePaymentSuccess" />
   </AppLayout>
 </template>

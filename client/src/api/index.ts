@@ -10,6 +10,9 @@ const api = axios.create({
     },
 });
 
+console.log('[API DEBUG] BaseURL:', api.defaults.baseURL);
+console.log('[API DEBUG] Current Token:', localStorage.getItem('token'));
+
 api.interceptors.response.use(
     response => {
         isConnectingError.value = false;

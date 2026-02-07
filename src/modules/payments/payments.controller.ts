@@ -1,45 +1,58 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { initiateMonetbilPayment, updatePaymentStatus } from './payments.service';
+import { initiateStripePayment, declareManualPayment } from './payments.service';
 
 export const initiatePaymentHandler = async (req: FastifyRequest, reply: FastifyReply) => {
     try {
         const user = req.user as { id: number };
-        const { plan } = req.body as { plan: 'starter' | 'pro' };
+        const { plan, method, transaction_id, phone } = req.body as {
+            plan: 'starter' | 'pro',
+            method: 'stripe' | 'manual',
+            transaction_id?: string,
+            phone?: string
+        };
 
         if (!['starter', 'pro'].includes(plan)) {
             return reply.code(400).send({ message: 'Plan invalide' });
         }
 
         const amount = plan === 'starter' ? 5000 : 10000;
-        const result = await initiateMonetbilPayment(user.id, plan, amount);
 
-        return reply.send(result);
-    } catch (err) {
+        if (method === 'stripe') {
+            const result = await initiateStripePayment(user.id, plan, amount);
+            return reply.send(result);
+        } else if (method === 'manual') {
+            if (!transaction_id || !phone) {
+                return reply.code(400).send({ message: 'Transaction ID et numéro de téléphone requis pour le paiement manuel.' });
+            }
+            const result = await declareManualPayment(user.id, plan, amount, transaction_id, phone);
+            return reply.send(result);
+        } else {
+            return reply.code(400).send({ message: 'Méthode de paiement invalide' });
+        }
+
+    } catch (err: any) {
+        console.error('[PAYMENT CONTROLLER ERROR]', err);
         req.log.error({ err }, 'Payment initiation error');
+
+        if (err.message && err.message.includes('existe déjà')) {
+            return reply.code(409).send({
+                message: err.message,
+                error: 'DuplicateTransaction'
+            });
+        }
+
         return reply.code(500).send({
             message: "Erreur lors de l'initiation du paiement",
-            error: (err as any).message
+            error: err.message || 'Unknown error'
         });
     }
 };
 
-export const monetbilWebhookHandler = async (req: FastifyRequest, reply: FastifyReply) => {
-    try {
-        const data = (req.body || req.query) as any;
-        const { transaction_id, status } = data;
+export const stripeWebhookHandler = async (req: FastifyRequest, reply: FastifyReply) => {
+    // In a real implementation, you verify Stripe signature here
+    // const sig = req.headers['stripe-signature'];
 
-        req.log.info({ transaction_id, status }, 'Monetbil Webhook received');
-
-        // Note: In production, verify Monetbil signature here!
-        if (transaction_id && status === '1') {
-            await updatePaymentStatus(transaction_id, 'success');
-        } else if (transaction_id) {
-            await updatePaymentStatus(transaction_id, 'failed');
-        }
-
-        return reply.send({ status: 'ok' });
-    } catch (err) {
-        req.log.error(err);
-        return reply.code(500).send({ message: 'Webhook error' });
-    }
+    // For now we assume if we get a status=success callback locally or a webhook event, we process it.
+    // Ideally this listens for 'checkout.session.completed'
+    return reply.send({ received: true });
 };

@@ -9,6 +9,8 @@ export default defineConfig({
       '/auth': 'http://127.0.0.1:3000',
       '/appointments': 'http://127.0.0.1:3000',
       '/payments': 'http://127.0.0.1:3000',
+      '/admin/payments': 'http://127.0.0.1:3000',
+      '/admin/users': 'http://127.0.0.1:3000',
     }
   }
 })

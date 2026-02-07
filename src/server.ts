@@ -6,6 +6,7 @@ import { initDatabase } from './databases';
 import { appointmentRoutes } from './modules/appointments/appointments.routes';
 import { authRoutes } from './modules/auth/auth.routes';
 import { paymentRoutes } from './modules/payments/payments.routes';
+import { adminRoutes } from './modules/admin/admin.routes';
 import { findUserById, checkAndResetExpiredPlan } from './modules/auth/auth.service';
 
 const server = fastify({ logger: true });
@@ -44,6 +45,7 @@ server.setErrorHandler((error: any, request, reply) => {
 server.register(authRoutes, { prefix: '/auth' });
 server.register(appointmentRoutes, { prefix: '/appointments' });
 server.register(paymentRoutes, { prefix: '/payments' });
+server.register(adminRoutes, { prefix: '/admin' });
 
 // Graceful shutdown
 ['SIGINT', 'SIGTERM', 'SIGUSR2'].forEach(signal => {

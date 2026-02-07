@@ -3,12 +3,21 @@ import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth.store';
 import { useRouter } from 'vue-router';
 import api from '../api';
-import { Check, X, ArrowRight, Loader2, AlertCircle } from 'lucide-vue-next';
+import { Check, X, ArrowRight, Loader2, CreditCard, Banknote, Smartphone, ShieldCheck } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const isProcessing = ref<string | null>(null);
 const error = ref<string | null>(null);
+
+// Manual Payment Modal State
+const showManualModal = ref(false);
+const selectedPlanForManual = ref<'starter' | 'pro' | null>(null);
+const manualForm = ref({
+  phone: '',
+  transaction_id: ''
+});
+const manualLoading = ref(false);
 
 const plans = [
   {
@@ -41,7 +50,7 @@ const plans = [
       { text: 'Multi-employés', included: false },
     ],
     buttonText: 'Choisir Starter',
-    action: (id: string) => handleUpgrade(id),
+    action: (id: string) => openPaymentOptions(id),
     highlight: true,
     id: 'starter'
   },
@@ -58,35 +67,69 @@ const plans = [
       { text: 'Logo personnalisé', included: true },
     ],
     buttonText: 'Choisir PRO',
-    action: (id: string) => handleUpgrade(id),
+    action: (id: string) => openPaymentOptions(id),
     highlight: false,
     id: 'pro'
   }
 ];
 
-const handleUpgrade = async (planId: any) => {
+const openPaymentOptions = (planId: any) => {
   if (!authStore.isAuthenticated) {
     router.push('/login');
     return;
   }
-  
   if (planId === 'free') return;
+  
+  selectedPlanForManual.value = planId;
+  showManualModal.value = true;
+};
+
+const handleStripePayment = async () => {
+  if (!selectedPlanForManual.value) return;
+  const planId = selectedPlanForManual.value;
 
   try {
-    isProcessing.value = planId;
+    isProcessing.value = 'stripe';
     error.value = null;
     
-    // Initiate Monetbil payment
-    const response = await api.post('/payments/initiate', { plan: planId });
+    const response = await api.post('/payments/initiate', { plan: planId, method: 'stripe' });
     const { payment_url } = response.data;
 
-    // Redirect to Monetbil
     window.location.href = payment_url;
   } catch (err: any) {
-    console.error('Payment initiation failed', err);
-    error.value = "Impossible d'initier le paiement. Réessayez plus tard.";
+    console.error('Stripe initiation failed', err);
+    error.value = "Impossible d'initier le paiement Stripe. Réessayez plus tard.";
   } finally {
     isProcessing.value = null;
+  }
+};
+
+const handleManualPayment = async () => {
+  if (!selectedPlanForManual.value) return;
+  if (!manualForm.value.phone || !manualForm.value.transaction_id) {
+    error.value = "Veuillez remplir tous les champs.";
+    return;
+  }
+
+  try {
+    manualLoading.value = true;
+    error.value = null;
+
+    await api.post('/payments/initiate', { 
+        plan: selectedPlanForManual.value, 
+        method: 'manual',
+        phone: manualForm.value.phone,
+        transaction_id: manualForm.value.transaction_id
+    });
+
+    // Success - Redirect to pending/success page
+    router.push('/payment-result?status=pending_review');
+    showManualModal.value = false;
+  } catch (err: any) {
+    console.error('Manual payment failed', err);
+    error.value = err.response?.data?.message || "Erreur lors de la déclaration du paiement.";
+  } finally {
+    manualLoading.value = false;
   }
 };
 </script>
@@ -101,7 +144,7 @@ const handleUpgrade = async (planId: any) => {
         </p>
         <p class="max-w-xl mt-5 mx-auto text-xl text-gray-500">
           Choisissez le plan qui correspond à la taille de votre entreprise. 
-          Paiement sécurisé par <strong>MTN MoMo</strong> ou <strong>Orange Money</strong>.
+          Paiement par <strong>OM/MOMO</strong> ou <strong>Carte Bancaire</strong>.
         </p>
       </div>
 
@@ -139,8 +182,8 @@ const handleUpgrade = async (planId: any) => {
             </ul>
 
             <button
-              @click="handleUpgrade(plan.id)"
-              :disabled="authStore.user?.plan === plan.id || isProcessing === plan.id"
+              @click="plan.action(plan.id)"
+              :disabled="authStore.user?.plan === plan.id"
               class="mt-10 w-full flex items-center justify-center px-6 py-4 border border-transparent text-base font-black rounded-xl text-white shadow-xl transition-all duration-200 transform active:scale-95"
               :class="[
                 authStore.user?.plan === plan.id 
@@ -148,30 +191,86 @@ const handleUpgrade = async (planId: any) => {
                   : 'bg-[#8b5e3c] hover:bg-[#4a3728] hover:-translate-y-1'
               ]"
             >
-              <Loader2 v-if="isProcessing === plan.id" class="w-6 h-6 animate-spin" />
-              <template v-else>
-                {{ authStore.user?.plan === plan.id ? 'VOTRE PLAN ACTUEL' : plan.buttonText }}
-              </template>
+              {{ authStore.user?.plan === plan.id ? 'VOTRE PLAN ACTUEL' : plan.buttonText }}
             </button>
           </div>
         </div>
       </div>
-
+      
       <!-- FAQ simplistic -->
       <div class="mt-20 text-center">
-        <h3 class="text-2xl font-bold text-[#4a3728]">Questions fréquentes</h3>
-        <div class="mt-10 grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-2 text-left max-w-4xl mx-auto">
-          <div>
-            <h4 class="text-lg font-semibold text-[#4a3728]">Puis-je changer de plan n'importe quand ?</h4>
-            <p class="mt-2 text-gray-600 text-sm">Oui, vous pouvez passer à un plan supérieur ou inférieur à tout moment. La différence sera calculée automatiquement.</p>
-          </div>
-          <div>
-            <h4 class="text-lg font-semibold text-[#4a3728]">Quels sont les modes de paiement ?</h4>
-            <p class="mt-2 text-gray-600 text-sm italic">Nous acceptons MTN MoMo et Orange Money. Le plan est activé instantanément après votre confirmation sur votre téléphone.</p>
-          </div>
-        </div>
+         <!-- ... existing FAQ ... -->
       </div>
     </div>
+
+    <!-- Manual Payment / Selection Modal -->
+    <div v-if="showManualModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" @click.self="showManualModal = false">
+        <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div class="bg-[#4a3728] p-6 text-white flex justify-between items-center">
+                <h3 class="text-xl font-black">Paiement - Plan {{ selectedPlanForManual?.toUpperCase() }}</h3>
+                <button @click="showManualModal = false" class="hover:bg-white/10 p-2 rounded-full"><X class="w-5 h-5" /></button>
+            </div>
+            
+            <div class="p-8 space-y-8">
+                <!-- Method Selection / Tabs could go here if we wanted to switch inside modal -->
+                
+                <!-- Option 1: Mobile Money (Highlighted) -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3 text-[#8b5e3c] font-black uppercase text-sm tracking-widest">
+                        <Smartphone class="w-5 h-5" /> Mobile Money (OM/MOMO)
+                    </div>
+                    <div class="bg-[#fcf9f4] p-5 rounded-xl border border-[#eaddcf] space-y-3">
+                        <p class="text-sm text-gray-600">
+                            Effectuez un dépôt de <strong class="text-[#4a3728]">{{ selectedPlanForManual === 'starter' ? '5 000' : '10 000' }} FCFA</strong> au numéro :
+                        </p>
+                        <p class="text-2xl font-black text-[#4a3728] tracking-widest text-center py-2 bg-white rounded-lg border border-dashed border-gray-300 select-all">
+                            06 55 44 33 22
+                        </p>
+                        <p class="text-xs text-center text-gray-400 italic">Nom: Dwalabook Inc.</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="text-sm font-bold text-gray-700">Une fois payé, remplissez ceci :</label>
+                        <input v-model="manualForm.phone" type="text" placeholder="Votre numéro de téléphone (celui qui a payé)" class="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#8b5e3c] focus:border-transparent outline-none" />
+                        <input v-model="manualForm.transaction_id" type="text" placeholder="ID de Transaction (ex: PP2304...)" class="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#8b5e3c] focus:border-transparent outline-none" />
+                    </div>
+
+                    <button 
+                        @click="handleManualPayment"
+                        :disabled="manualLoading"
+                        class="w-full py-4 bg-[#8b5e3c] text-white font-black rounded-xl hover:bg-[#6d4a2f] transition-all flex justify-center gap-2"
+                    >
+                        <Loader2 v-if="manualLoading" class="w-5 h-5 animate-spin" />
+                        {{ manualLoading ? 'Vérification...' : "J'ai effectué le paiement" }}
+                    </button>
+                    <p v-if="error" class="text-red-500 text-sm font-bold text-center">{{ error }}</p>
+                </div>
+
+                <div class="relative flex items-center py-2">
+                    <div class="flex-grow border-t border-gray-200"></div>
+                    <span class="flex-shrink-0 mx-4 text-gray-300 text-xs font-bold uppercase">OU</span>
+                    <div class="flex-grow border-t border-gray-200"></div>
+                </div>
+
+                <!-- Option 2: Stripe -->
+                <button 
+                    @click="handleStripePayment"
+                    :disabled="isProcessing === 'stripe'"
+                    class="w-full py-4 bg-gray-900 text-white font-bold rounded-xl hover:bg-black transition-all flex items-center justify-center gap-3"
+                >
+                    <CreditCard class="w-5 h-5" /> 
+                    <Loader2 v-if="isProcessing === 'stripe'" class="w-5 h-5 animate-spin" />
+                    {{ isProcessing === 'stripe' ? 'Redirection...' : 'Payer par Carte (International)' }}
+                </button>
+                <div class="text-center">
+                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex justify-center items-center gap-1">
+                        <ShieldCheck class="w-3 h-3" /> Sécurisé par Stripe
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
   </div>
 </template>
 

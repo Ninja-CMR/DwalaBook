@@ -54,6 +54,61 @@ export const query = async (text: string, params: any[] = []) => {
       const rows = data.appointments.filter(a => a.user_id === userId);
       return { rows };
     }
+
+    if (t.includes('FROM PAYMENTS')) {
+      console.log('--- DB QUERY: FROM PAYMENTS ---');
+      console.log('Query Text:', t);
+
+      // Handle Admin Dashboard Join Query
+      // The query in admin.service.ts is: SELECT ... FROM PAYMENTS p JOIN USERS u ...
+      if (t.includes('JOIN USERS')) {
+        console.log('Detected ADMIN JOIN Query');
+
+        // Filter for pending_review if requested
+        let filtered = data.payments;
+        if (t.includes("'PENDING_REVIEW'")) {
+          console.log('Filtering for pending_review');
+          filtered = filtered.filter(p => p.status === 'pending_review');
+        }
+
+        const rows = filtered.map(p => {
+          const user = data.users.find(u => u.id === p.user_id);
+          // Explicitly construct the result to ensure all fields are present
+          return {
+            id: p.id,
+            user_id: p.user_id,
+            provider: p.provider,
+            transaction_id: p.transaction_id,
+            amount: p.amount,
+            plan: p.plan,
+            status: p.status,
+            phone: p.phone,
+            created_at: p.created_at,
+            user_name: user ? user.name : 'Inconnu',
+            user_email: user ? user.email : 'Inconnu'
+          };
+        })
+          .sort((a, b) => {
+            const dateA = new Date(a.created_at || 0).getTime();
+            const dateB = new Date(b.created_at || 0).getTime();
+            return dateB - dateA;
+          });
+
+        console.log('Returning rows:', rows.length);
+        if (rows.length > 0) console.log('Sample Row:', rows[0]);
+        return { rows };
+      }
+
+      // Simple select (duplicate check or other)
+      if (t.includes('WHERE TRANSACTION_ID =')) {
+        const txId = params[0];
+        const rows = data.payments.filter(p => p.transaction_id === txId);
+        console.log(`[DB] Checking duplicate for ${txId}: ${rows.length} found`);
+        return { rows };
+      }
+
+      return { rows: data.payments };
+    }
   }
 
   if (t.startsWith('INSERT INTO USERS')) {
@@ -137,6 +192,7 @@ export const query = async (text: string, params: any[] = []) => {
       amount: params[3],
       plan: params[4],
       status: params[5] || 'pending',
+      phone: params[6] || null,
       created_at: new Date().toISOString()
     };
     data.payments.push(newPayment);

@@ -1,0 +1,58 @@
+Project Status and Roadmap
+Date: 2026-02-07 Project: DwalaBook (SaaS Appointment Scheduling)
+
+Current Status (State of the Project)
+The project has successfully implemented the core payment operational flow, including:
+
+Frontend (Client):
+
+Pricing Page: Users can select plans (Starter/Pro).
+Manual Payment (OM/MOMO): Users declare payments via a modal (Phone, Transaction ID).
+Stripe Integration: UI exists for Card payments (Backend logic implemented but requires webhook setup for auto-confirmation).
+Admin Dashboard: A secure view (/admin) for administrators to see pending manual payments.
+Backend (Server):
+
+API Routes: /payments/initiate handles both Stripe and Manual declarations.
+Admin API: /admin/payments/pending feeds the dashboard; /admin/payments/approve validates transactions.
+Database Mock: 
+database.json
+ and 
+src/databases/index.ts
+ are robustly handling user joins and duplicate transaction prevention.
+Email Service: nodemailer is configured (using a mock/logger in dev) to notify Admins of new declarations and Users of approvals.
+Recent Fixes:
+
+Resolved 500 Internal Server Errors due to duplicate ID checks.
+Resolved 404 Not Found on Admin routes due to Vite Proxy misconfiguration.
+Fixed Data Display Issues in Admin Dashboard (missing user names/emails).
+Roadmap / Future Work
+The next major feature to implement is a Secure Email Confirmation Flow for plan updates.
+
+Feature: Email Confirmation for Plan Activation
+Objective: Ensure that a plan update is only applied after the user confirms ownership of their email address.
+
+Workflow:
+
+User Action: User enters their email (or confirms existing email) during the upgrade process.
+System Action:
+Instead of immediately activating the plan (or just sending a simple notification), the system generates a unique Confirmation Token.
+The system sends an email to the user with a Confirmation Link (e.g., https://dwalabook.com/confirm-plan?token=xyz).
+Verification:
+User clicks the link.
+Frontend sends the token to the Backend.
+Backend validates the token.
+If Valid: The User's plan is updated to starter or 
+pro
+.
+Completion: User is redirected to the dashboard with the new features unlocked.
+Technical Tasks (To Be Done)
+ Database Update: Add confirmation_token and token_expires_at fields to USERS (or a separate PENDING_UPDATES table).
+ Backend API:
+Create endpoint POST /auth/request-plan-update (Generates token, sends email).
+Create endpoint GET/POST /auth/confirm-plan-update (Validates token, updates plan).
+ Email Service:
+Create HTML template for "Confirm your Subscription".
+Integrate with real SMTP (Gmail/Outlook) or Transactional Provider (SendGrid/Resend) for production.
+ Frontend:
+Create a "Verification Sent" page.
+Create a "Processing Confirmation" page (landing page for the email link).

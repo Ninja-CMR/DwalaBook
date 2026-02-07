@@ -73,9 +73,9 @@
       "name": "Lao Sarl",
       "email": "laosarl@gmail.com",
       "password": "$2b$10$XzbdtCL4oHgX19Mod/ZwCe2sLGuE60G/VcdzGUntaagZ2qwXlq4n2",
-      "plan": "pro",
+      "plan": "starter",
       "appointment_limit": 999999,
-      "plan_expire_at": "2026-03-09T12:59:22.975Z",
+      "plan_expire_at": "2026-03-09T13:16:26.043Z",
       "created_at": "2026-02-07T11:18:24.565Z"
     }
   ],
@@ -412,7 +412,7 @@
       "transaction_id": "PP23456",
       "amount": 5000,
       "plan": "starter",
-      "status": "pending_review",
+      "status": "approved",
       "created_at": "2026-02-07T11:58:55.119Z"
     },
     {
@@ -422,7 +422,7 @@
       "transaction_id": "PP2340",
       "amount": 5000,
       "plan": "starter",
-      "status": "pending_review",
+      "status": "approved",
       "created_at": "2026-02-07T12:00:29.198Z"
     },
     {
@@ -432,7 +432,7 @@
       "transaction_id": "PP23490",
       "amount": 5000,
       "plan": "starter",
-      "status": "pending_review",
+      "status": "approved",
       "phone": "696173490",
       "created_at": "2026-02-07T12:03:34.133Z"
     },
@@ -443,7 +443,7 @@
       "transaction_id": "PP093842",
       "amount": 10000,
       "plan": "pro",
-      "status": "pending_review",
+      "status": "approved",
       "phone": "690345421",
       "created_at": "2026-02-07T12:31:12.211Z"
     },

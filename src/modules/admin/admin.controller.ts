@@ -25,10 +25,14 @@ export const getPendingPaymentsHandler = async (req: FastifyRequest, reply: Fast
         // Enrich with user info
         const enrichedPayments = await Promise.all(
             payments.map(async (payment: any) => {
-                const userResult = await query('SELECT id, name, email FROM USERS WHERE id = $1', [payment.user_id]);
+                const userResult = await query('SELECT id, name, email, whatsapp_number FROM USERS WHERE id = $1', [payment.user_id]);
+                const user = userResult.rows[0] || {};
                 return {
                     ...payment,
-                    user: userResult.rows[0]
+                    user_name: user.name || 'Inconnu',
+                    user_email: user.email || 'Inconnu',
+                    phone: user.whatsapp_number || 'Non renseigné',
+                    user: user // Keep for backward compatibility if needed, but the frontend uses the flat fields
                 };
             })
         );

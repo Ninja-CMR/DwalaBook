@@ -103,7 +103,7 @@ const handleSubmit = async () => {
           <p class="text-gray-500 font-medium">Rejoignez DwalaBook pour booster votre activité.</p>
         </div>
 
-        <form @submit.prevent="handleSubmit" class="space-y-6">
+        <form @submit.prevent="handleSubmit" class="space-y-6" autocomplete="off">
           <div class="space-y-2">
             <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Nom / Entreprise</label>
             <div class="relative group">
@@ -114,6 +114,7 @@ const handleSubmit = async () => {
                 v-model="name" 
                 type="text" 
                 required 
+                autocomplete="off"
                 placeholder="Ex: Salon de Coiffure Akwa"
                 class="block w-full pl-12 pr-4 py-4 border-2 border-gray-50 rounded-2xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-bold"
               />
@@ -130,6 +131,7 @@ const handleSubmit = async () => {
                 v-model="email" 
                 type="email" 
                 required 
+                autocomplete="off"
                 placeholder="contact@entreprise.cm"
                 class="block w-full pl-12 pr-4 py-4 border-2 border-gray-50 rounded-2xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-bold"
               />
@@ -146,6 +148,7 @@ const handleSubmit = async () => {
                 v-model="password" 
                 type="password" 
                 required 
+                autocomplete="new-password"
                 placeholder="Minimum 8 caractères"
                 class="block w-full pl-12 pr-4 py-4 border-2 border-gray-50 rounded-2xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-bold"
               />

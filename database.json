@@ -68,6 +68,20 @@
       "appointment_limit": 999999,
       "created_at": "2026-02-02T19:37:20.487Z",
       "plan_expire_at": "2026-03-06T23:23:10.167Z"
+    },
+    {
+      "id": 10,
+      "name": "Salon Sandrine ",
+      "email": "sandrinecoiffre@gmail.com",
+      "password": "$2b$10$0Hlu6Dy7ZyxywgqyV//h5..O5Uqoo1Vl4OOK7C/tQ4iSewFLVDK2e",
+      "plan": "free",
+      "appointment_limit": 5,
+      "plan_expire_at": null,
+      "role": "user",
+      "notification_preference": "email",
+      "whatsapp_number": null,
+      "last_notification_sent": null,
+      "created_at": "2026-02-15T18:01:16.954Z"
     }
   ],
   "appointments": [
@@ -445,6 +459,45 @@
       "plan": "pro",
       "status": "pending",
       "created_at": "2026-02-04T23:57:11.419Z"
+    },
+    {
+      "id": 16,
+      "user_id": 10,
+      "provider": "om",
+      "transaction_id": "OM_1771179931952_GXVVFOJ80",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending",
+      "payment_proof": null,
+      "activated_by": null,
+      "activated_at": null,
+      "created_at": "2026-02-15T18:25:31.952Z"
+    },
+    {
+      "id": 17,
+      "user_id": 10,
+      "provider": "stripe",
+      "transaction_id": "STRIPE_1771180000735_APNVOSRID",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending",
+      "payment_proof": null,
+      "activated_by": null,
+      "activated_at": null,
+      "created_at": "2026-02-15T18:26:40.735Z"
+    },
+    {
+      "id": 18,
+      "user_id": 10,
+      "provider": "mtn",
+      "transaction_id": "MTN_1771180006113_JERX20ZBW",
+      "amount": 5000,
+      "plan": "starter",
+      "status": "pending",
+      "payment_proof": null,
+      "activated_by": null,
+      "activated_at": null,
+      "created_at": "2026-02-15T18:26:46.113Z"
     }
   ]
 }

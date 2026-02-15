@@ -22,12 +22,13 @@ const loading = ref(true);
 const processingId = ref<string | null>(null);
 const message = ref<string | null>(null);
 
-const fetchPayments = async () => {
+    const fetchPayments = async () => {
     loading.value = true;
     try {
         const res = await api.get('/admin/payments/pending');
         console.log('[ADMIN VIEW DATA]', res.data);
-        payments.value = res.data;
+        // Fix: Access the 'payments' property from the response object
+        payments.value = res.data.payments || res.data; 
     } catch (err) {
         console.error(err);
     } finally {
@@ -89,23 +90,35 @@ onMounted(() => {
             </div>
 
             <div v-else class="grid gap-6">
-                <div v-for="payment in payments" :key="payment.transaction_id" class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                    <div class="space-y-1">
+                <div v-for="payment in payments" :key="payment.transaction_id" class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col md:flex-row items-start gap-6">
+                    <!-- Payment Proof Image -->
+                    <div v-if="payment.payment_proof" class="w-full md:w-32 h-32 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 cursor-pointer group relative" @click="window.open(payment.payment_proof, '_blank')">
+                         <img :src="payment.payment_proof" alt="Preuve" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                         <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                             <div class="opacity-0 group-hover:opacity-100 bg-white/90 p-1 rounded-full text-xs font-bold px-2">Voir</div>
+                         </div>
+                    </div>
+                    <div v-else class="w-full md:w-32 h-32 flex-shrink-0 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-xs text-center p-2 border border-gray-200 border-dashed">
+                        Pas de preuve
+                    </div>
+
+                    <div class="space-y-1 flex-1">
                         <div class="flex items-center gap-3">
                             <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-black uppercase tracking-wider">
                                 {{ payment.plan }}
                             </span>
                             <span class="text-xs text-gray-400 font-mono">{{ payment.transaction_id }}</span>
                         </div>
-                        <h4 class="text-lg font-bold text-gray-900">{{ payment.user_name }} ({{ payment.user_email }})</h4>
+                        <h4 class="text-lg font-bold text-gray-900">{{ payment.user_name }}</h4>
                         <div class="text-sm text-gray-600 space-y-0.5">
+                            <p>Email: <strong class="text-gray-900">{{ payment.user_email }}</strong></p>
                             <p>Montant: <strong class="text-gray-900">{{ payment.amount }} FCFA</strong></p>
                             <p>Tel: <strong class="text-gray-900">{{ payment.phone }}</strong></p>
                             <p class="text-xs text-gray-400">{{ new Date(payment.created_at).toLocaleString() }}</p>
                         </div>
                     </div>
                     
-                    <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="flex items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
                         <button 
                             @click="handleAction(payment.transaction_id, 'reject')"
                             :disabled="processingId === payment.transaction_id"

@@ -54,12 +54,12 @@ const filteredAppointments = computed(() => {
 // FullCalendar Config
 const calendarOptions = computed(() => ({
   plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-  initialView: 'timeGridWeek',
+  initialView: window.innerWidth < 768 ? 'timeGridDay' : 'timeGridWeek',
   locale: frLocale,
   headerToolbar: {
-    left: 'prev,next today',
+    left: window.innerWidth < 768 ? 'prev,next' : 'prev,next today',
     center: 'title',
-    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    right: window.innerWidth < 768 ? '' : 'dayGridMonth,timeGridWeek,timeGridDay'
   },
   events: appointmentStore.appointments.map(apt => ({
     id: String(apt.id),
@@ -73,10 +73,12 @@ const calendarOptions = computed(() => ({
     // Potentially open edit modal
     console.log('Event clicked:', info.event.extendedProps);
   },
-  height: 'auto',
+  height: window.innerWidth < 768 ? 600 : 'auto',
   allDaySlot: false,
   slotMinTime: '07:00:00',
-  slotMaxTime: '21:00:00'
+  slotMaxTime: '21:00:00',
+  contentHeight: window.innerWidth < 768 ? 500 : 'auto',
+  expandRows: true
 }));
 
 const getEventColor = (status: string) => {
@@ -192,7 +194,7 @@ const exportToPDF = () => {
 
 <template>
   <AppLayout>
-    <div v-motion-fade class="max-w-7xl mx-auto space-y-8">
+    <div v-motion-fade class="max-w-7xl mx-auto space-y-8 w-full overflow-hidden">
       <!-- Header Area -->
       <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
         <div class="space-y-1">
@@ -247,7 +249,7 @@ const exportToPDF = () => {
       </div>
 
       <!-- Controls (List View Only) -->
-      <div v-if="viewMode === 'list'" class="grid grid-cols-1 md:grid-cols-4 gap-4" v-motion-slide-top>
+      <div v-if="viewMode === 'list'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4" v-motion-slide-top>
         <div class="md:col-span-2 relative">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
             <Search class="w-5 h-5" />
@@ -286,7 +288,7 @@ const exportToPDF = () => {
         </div>
 
         <!-- List View -->
-        <div v-else class="overflow-x-auto" v-motion-fade>
+        <div v-else class="overflow-x-auto w-full" v-motion-fade>
           <div v-if="appointmentStore.loading" class="p-24 text-center">
             <div class="inline-block w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
             <p class="mt-4 text-gray-500 font-black tracking-tight">DwalaBook synchronise vos données...</p>
@@ -303,22 +305,22 @@ const exportToPDF = () => {
           </div>
 
           <div v-else>
-            <table class="w-full text-left border-collapse">
+            <table class="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr class="bg-gray-50/50">
-                  <th class="px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.1em]">
+                  <th class="px-4 md:px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.1em] w-[35%]">
                     {{ appointmentStore.authStore.user?.plan !== 'free' ? 'Client & Staff' : 'Client' }}
                   </th>
-                  <th class="px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.1em]">Date & Heure</th>
-                  <th class="px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.1em] text-center">Statut</th>
-                  <th class="px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.1em] text-right">
+                  <th class="px-4 md:px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.1em] w-[25%]">Date & Heure</th>
+                  <th class="px-4 md:px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.1em] text-center w-[15%]">Statut</th>
+                  <th class="px-4 md:px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.1em] text-right w-[25%]">
                     {{ appointmentStore.authStore.user?.plan !== 'free' ? 'Actions Premium' : 'Actions' }}
                   </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-50">
                 <tr v-for="apt in filteredAppointments" :key="apt.id" class="group hover:bg-primary/[0.02] transition-all">
-                  <td class="px-8 py-6">
+                  <td class="px-4 md:px-8 py-6">
                     <div class="flex items-center gap-5">
                       <div class="w-14 h-14 rounded-2xl bg-secondary/20 flex items-center justify-center text-primary border-2 border-white shadow-sm font-black text-xl">
                         {{ apt.customer_name.charAt(0) }}

@@ -6,11 +6,9 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     proxy: {
-      '/auth': 'http://127.0.0.1:3000',
-      '/appointments': 'http://127.0.0.1:3000',
-      '/payments': 'http://127.0.0.1:3000',
-      '/admin/payments': 'http://127.0.0.1:3000',
-      '/admin/users': 'http://127.0.0.1:3000',
+      '/auth': 'http://localhost:3000',
+      '/appointments': 'http://localhost:3000',
+      '/payments': 'http://localhost:3000',
     }
   }
 })

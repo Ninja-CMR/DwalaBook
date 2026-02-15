@@ -8,6 +8,7 @@ import { authRoutes } from './modules/auth/auth.routes';
 import { paymentRoutes } from './modules/payments/payments.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
 import { findUserById, checkAndResetExpiredPlan } from './modules/auth/auth.service';
+import { initCronJobs } from './cron';
 
 const server = fastify({ logger: true });
 
@@ -22,6 +23,7 @@ server.register(jwt, {
 server.decorate('authenticate', async (request: any, reply: any) => {
     try {
         await request.jwtVerify();
+        server.log.info({ user: request.user }, 'Authentication successful');
         // Check for plan expiration
         if (request.user && request.user.id) {
             const dbUser = await findUserById(request.user.id);
@@ -33,9 +35,16 @@ server.decorate('authenticate', async (request: any, reply: any) => {
             }
         }
     } catch (err) {
+        server.log.error({ err }, 'Authentication failed');
         reply.send(err);
     }
 });
+
+// Health check
+server.get('/health', async () => {
+    return { status: 'ok', timestamp: new Date().toISOString() };
+});
+
 server.setErrorHandler((error: any, request, reply) => {
     server.log.error(error);
     reply.status(500).send({ message: 'Internal Server Error', error: error.message });

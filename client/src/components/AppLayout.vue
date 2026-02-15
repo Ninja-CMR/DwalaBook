@@ -162,7 +162,7 @@ const logout = () => {
       </transition>
 
       <!-- Main Content -->
-      <main class="flex-1 overflow-auto bg-[#fcf9f4] p-6 md:p-12 lg:p-16">
+      <main class="flex-1 overflow-auto bg-[#fcf9f4] p-4 md:p-12 lg:p-16">
         <slot />
       </main>
     </div>

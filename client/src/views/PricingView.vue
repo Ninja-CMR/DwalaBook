@@ -3,21 +3,19 @@ import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth.store';
 import { useRouter } from 'vue-router';
 import api from '../api';
-import { Check, X, ArrowRight, Loader2, CreditCard, Banknote, Smartphone, ShieldCheck } from 'lucide-vue-next';
+import { Check, X, Loader2, AlertCircle, Globe, CreditCard, Smartphone } from 'lucide-vue-next';
+import ManualPaymentModal from '../components/ManualPaymentModal.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const isProcessing = ref<string | null>(null);
 const error = ref<string | null>(null);
 
-// Manual Payment Modal State
-const showManualModal = ref(false);
-const selectedPlanForManual = ref<'starter' | 'pro' | null>(null);
-const manualForm = ref({
-  phone: '',
-  transaction_id: ''
+const manualPaymentData = ref({
+  isOpen: false,
+  planId: 'starter' as 'starter' | 'pro',
+  amount: 0
 });
-const manualLoading = ref(false);
 
 const plans = [
   {
@@ -50,9 +48,10 @@ const plans = [
       { text: 'Multi-employés', included: false },
     ],
     buttonText: 'Choisir Starter',
-    action: (id: string) => openPaymentOptions(id),
+    action: (id: string, amount: number) => showPaymentOptions(id as any, amount),
     highlight: true,
-    id: 'starter'
+    id: 'starter',
+    rawPrice: 5000
   },
   {
     name: 'PRO',
@@ -67,70 +66,51 @@ const plans = [
       { text: 'Logo personnalisé', included: true },
     ],
     buttonText: 'Choisir PRO',
-    action: (id: string) => openPaymentOptions(id),
+    action: (id: string, amount: number) => showPaymentOptions(id as any, amount),
     highlight: false,
-    id: 'pro'
+    id: 'pro',
+    rawPrice: 10000
   }
 ];
 
-const openPaymentOptions = (planId: any) => {
+const selectedPlan = ref<any>(null);
+
+const showPaymentOptions = (id: 'starter' | 'pro', amount: number) => {
   if (!authStore.isAuthenticated) {
     router.push('/login');
     return;
   }
-  if (planId === 'free') return;
-  
-  selectedPlanForManual.value = planId;
-  showManualModal.value = true;
+  selectedPlan.value = { id, amount };
 };
 
-const handleStripePayment = async () => {
-  if (!selectedPlanForManual.value) return;
-  const planId = selectedPlanForManual.value;
+const handleStripeUpgrade = async () => {
+  if (!selectedPlan.value) return;
 
   try {
     isProcessing.value = 'stripe';
+    isProcessing.value = 'stripe';
     error.value = null;
     
-    const response = await api.post('/payments/initiate', { plan: planId, method: 'stripe' });
-    const { payment_url } = response.data;
+    const response = await api.post('/payments/stripe/create-session', { plan: selectedPlan.value.id });
+    const { checkout_url } = response.data;
 
-    window.location.href = payment_url;
+    // Redirect to Stripe Checkout
+    window.location.href = checkout_url;
   } catch (err: any) {
     console.error('Stripe initiation failed', err);
-    error.value = "Impossible d'initier le paiement Stripe. Réessayez plus tard.";
+    error.value = err.response?.data?.message || err.message || "Impossible d'initier le paiement Stripe.";
   } finally {
     isProcessing.value = null;
   }
 };
 
-const handleManualPayment = async () => {
-  if (!selectedPlanForManual.value) return;
-  if (!manualForm.value.phone || !manualForm.value.transaction_id) {
-    error.value = "Veuillez remplir tous les champs.";
-    return;
-  }
-
-  try {
-    manualLoading.value = true;
-    error.value = null;
-
-    await api.post('/payments/initiate', { 
-        plan: selectedPlanForManual.value, 
-        method: 'manual',
-        phone: manualForm.value.phone,
-        transaction_id: manualForm.value.transaction_id
-    });
-
-    // Success - Redirect to pending/success page
-    router.push('/payment-result?status=pending_review');
-    showManualModal.value = false;
-  } catch (err: any) {
-    console.error('Manual payment failed', err);
-    error.value = err.response?.data?.message || "Erreur lors de la déclaration du paiement.";
-  } finally {
-    manualLoading.value = false;
-  }
+const handleManualUpgrade = () => {
+  if (!selectedPlan.value) return;
+  manualPaymentData.value = {
+    isOpen: true,
+    planId: selectedPlan.value.id,
+    amount: selectedPlan.value.amount
+  };
 };
 </script>
 
@@ -149,12 +129,21 @@ const handleManualPayment = async () => {
       </div>
 
       <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+        <!-- Error Alert -->
+        <div v-if="error" class="md:col-span-3 p-6 bg-red-50 border-2 border-red-100 rounded-[2rem] text-red-600 font-extrabold flex items-center justify-center gap-4 animate-bounce mb-4">
+            <AlertCircle class="w-8 h-8" />
+            <div class="text-center">
+                <p class="text-lg">{{ error }}</p>
+                <p class="text-xs opacity-70 font-bold uppercase tracking-widest mt-1">Veuillez vérifier votre connexion ou réessayez.</p>
+            </div>
+        </div>
+
         <div 
           v-for="plan in plans" 
           :key="plan.name"
-          class="relative bg-white rounded-2xl shadow-xl transition-all duration-300 hover:scale-105"
+          class="relative bg-white rounded-[2.5rem] shadow-xl transition-all duration-300 hover:scale-[1.02]"
           :class="[
-            plan.highlight ? 'border-2 border-[#8b5e3c] ring-4 ring-[#8b5e3c]/10 scale-105 z-10' : 'border border-gray-100'
+            plan.highlight ? 'border-2 border-[#8b5e3c] ring-8 ring-[#8b5e3c]/5 scale-100 z-10' : 'border border-gray-100'
           ]"
         >
           <div v-if="plan.highlight" class="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#8b5e3c] text-white px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider">
@@ -166,7 +155,7 @@ const handleManualPayment = async () => {
             <p class="mt-4 text-gray-500 text-sm h-10">{{ plan.description }}</p>
             <div class="mt-6 flex items-baseline">
               <span class="text-4xl font-extrabold text-[#4a3728]">{{ plan.price }}</span>
-              <span class="ml-1 text-xl font-medium text-gray-500">FCFA/mois</span>
+              <span class="ml-2 text-xl font-medium text-gray-500">FCFA / mois</span>
             </div>
 
             <ul class="mt-8 space-y-4">
@@ -181,9 +170,11 @@ const handleManualPayment = async () => {
               </li>
             </ul>
 
+            <!-- Plan Action Button -->
             <button
-              @click="plan.action(plan.id)"
-              :disabled="authStore.user?.plan === plan.id"
+              v-if="!selectedPlan || selectedPlan.id !== plan.id"
+              @click="plan.action(plan.id, plan.rawPrice || 0)"
+              :disabled="authStore.user?.plan === plan.id || isProcessing === plan.id"
               class="mt-10 w-full flex items-center justify-center px-6 py-4 border border-transparent text-base font-black rounded-xl text-white shadow-xl transition-all duration-200 transform active:scale-95"
               :class="[
                 authStore.user?.plan === plan.id 
@@ -193,10 +184,62 @@ const handleManualPayment = async () => {
             >
               {{ authStore.user?.plan === plan.id ? 'VOTRE PLAN ACTUEL' : plan.buttonText }}
             </button>
+
+            <!-- Payment Method Selection (Appears after selecting plan) -->
+            <div v-else class="mt-8 space-y-3 animate-in fade-in slide-in-from-top-4 duration-300">
+              <p class="text-[10px] font-black text-[#8b5e3c] uppercase tracking-[0.2em] text-center mb-4">Mode de paiement</p>
+              
+              <!-- Stripe Button -->
+              <button 
+                @click="handleStripeUpgrade"
+                :disabled="isProcessing === 'stripe'"
+                class="w-full flex items-center gap-3 px-4 py-4 bg-primary text-white rounded-2xl font-bold text-sm shadow-lg hover:bg-[#4a3728] transition-all group active:scale-95"
+              >
+                <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                  <Globe class="w-5 h-5 text-[#DDB892]" />
+                </div>
+                <div class="flex-1 text-left">
+                  <span>Carte Bancaire</span>
+                  <p class="text-[10px] opacity-70 font-medium">Stripe (International)</p>
+                </div>
+                <Loader2 v-if="isProcessing === 'stripe'" class="w-4 h-4 animate-spin" />
+                <CreditCard v-else class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+
+              <!-- Local Payment Button -->
+              <button 
+                @click="handleManualUpgrade"
+                class="w-full flex items-center gap-3 px-4 py-4 bg-white border-2 border-gray-100 text-[#4a3728] rounded-2xl font-bold text-sm shadow-sm hover:border-[#8b5e3c] hover:bg-[#8b5e3c]/5 transition-all group active:scale-95"
+              >
+                <div class="w-8 h-8 rounded-lg bg-[#8b5e3c]/10 flex items-center justify-center">
+                  <Smartphone class="w-5 h-5 text-[#8b5e3c]" />
+                </div>
+                <div class="flex-1 text-left">
+                  <span>Mobile Money</span>
+                  <p class="text-[10px] text-gray-400 font-medium">OM, MTN (Cameroun)</p>
+                </div>
+                <Smartphone class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-[#8b5e3c]" />
+              </button>
+
+              <button 
+                @click="selectedPlan = null"
+                class="w-full text-[10px] text-gray-400 font-black uppercase tracking-widest hover:text-red-500 transition-colors py-2"
+              >
+                Annuler selection
+              </button>
+            </div>
           </div>
         </div>
       </div>
-      
+
+      <!-- Manual Payment Modal -->
+      <ManualPaymentModal 
+        :isOpen="manualPaymentData.isOpen"
+        :planId="manualPaymentData.planId"
+        :amount="manualPaymentData.amount"
+        @close="manualPaymentData.isOpen = false"
+      />
+
       <!-- FAQ simplistic -->
       <div class="mt-20 text-center">
          <!-- ... existing FAQ ... -->

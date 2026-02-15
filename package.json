@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/server.ts",
+    "dev": "nodemon",
     "build": "tsc",
     "start": "node dist/server.js"
   },
@@ -16,9 +16,13 @@
   "dependencies": {
     "@fastify/cors": "^11.2.0",
     "@fastify/jwt": "^10.0.0",
+    "@types/multer": "^2.0.0",
+    "@types/node-cron": "^3.0.11",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
     "fastify": "^5.7.2",
+    "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
     "nodemailer": "^7.0.13",
     "pg": "^8.17.2",
     "sqlite": "^5.1.1",

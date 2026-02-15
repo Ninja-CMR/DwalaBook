@@ -1,13 +1,30 @@
 import { FastifyInstance } from 'fastify';
-import { initiatePaymentHandler, stripeWebhookHandler } from './payments.controller';
+import {
+    initiateStripeHandler,
+    initiateManualHandler,
+    uploadProofHandler,
+    stripeWebhookHandler
+} from './payments.controller';
 
 export async function paymentRoutes(fastify: FastifyInstance) {
-    // Initiate payment (Protected)
-    // Body: { plan: 'starter' | 'pro', method: 'stripe' | 'manual', ... }
-    fastify.post('/initiate', {
+    // Stripe routes (protected)
+    fastify.post('/stripe/create-session', {
         onRequest: [(fastify as any).authenticate]
-    }, initiatePaymentHandler);
+    }, initiateStripeHandler);
 
-    // Stripe Webhook (Public)
-    fastify.all('/webhook', stripeWebhookHandler);
+    // Stripe webhook (public, but verified by signature)
+    fastify.post('/stripe/webhook', {
+        config: {
+            rawBody: true // Required for Stripe signature verification
+        }
+    }, stripeWebhookHandler);
+
+    // Manual payment routes (protected)
+    fastify.post('/manual/request', {
+        onRequest: [(fastify as any).authenticate]
+    }, initiateManualHandler);
+
+    fastify.post('/manual/upload-proof', {
+        onRequest: [(fastify as any).authenticate]
+    }, uploadProofHandler);
 }

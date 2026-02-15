@@ -1,23 +1,36 @@
 import { FastifyInstance } from 'fastify';
-import { getPendingPaymentsHandler, approvePaymentHandler, rejectPaymentHandler, getAllUsersHandler } from './admin.controller';
+import {
+    isAdmin,
+    getPendingPaymentsHandler,
+    activatePaymentHandler,
+    getUsersHandler,
+    manualActivateHandler
+} from './admin.controller';
 
 export async function adminRoutes(fastify: FastifyInstance) {
-    // Shared middleware for authentication (and ideally authorized role check)
-    fastify.addHook('onRequest', async (request: any, reply) => {
-        try {
-            console.log(`[ADMIN MIDDLEWARE] Incoming request to ${request.url}`);
-            await request.jwtVerify();
-            console.log('[ADMIN MIDDLEWARE] Auth Success for user:', request.user);
-            // TODO: Add admin role check here: request.user.role === 'admin'
-        } catch (err: any) {
-            console.error('[ADMIN MIDDLEWARE] Auth Failed:', err.message);
-            // reply.send(err); // Let's see if this was swallowing errors without logging
-            reply.code(401).send({ message: 'Unauthorized', error: err.message });
-        }
-    });
+    // All admin routes require authentication AND admin role
+    const adminMiddleware = [
+        (fastify as any).authenticate,
+        isAdmin
+    ];
 
-    fastify.get('/payments/pending', getPendingPaymentsHandler);
-    fastify.post('/payments/approve', approvePaymentHandler);
-    fastify.post('/payments/reject', rejectPaymentHandler);
-    fastify.get('/users', getAllUsersHandler);
+    // Get pending payments
+    fastify.get('/pending-payments', {
+        onRequest: adminMiddleware
+    }, getPendingPaymentsHandler);
+
+    // Activate a specific payment
+    fastify.post('/activate-payment/:id', {
+        onRequest: adminMiddleware
+    }, activatePaymentHandler);
+
+    // Get all users with subscription status
+    fastify.get('/users', {
+        onRequest: adminMiddleware
+    }, getUsersHandler);
+
+    // Manually activate a plan for a user
+    fastify.post('/manual-activate', {
+        onRequest: adminMiddleware
+    }, manualActivateHandler);
 }

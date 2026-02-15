@@ -9,6 +9,35 @@ interface LocalData {
   payments: any[];
 }
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  plan: 'free' | 'starter' | 'pro';
+  appointment_limit: number;
+  plan_expire_at: string | null;
+  role: 'user' | 'admin';
+  notification_preference: 'email' | 'whatsapp' | 'both';
+  whatsapp_number: string | null;
+  last_notification_sent: string | null;
+  created_at: string;
+}
+
+interface Payment {
+  id: number;
+  user_id: number;
+  provider: 'stripe' | 'om' | 'mtn';
+  transaction_id: string;
+  amount: number;
+  plan: 'starter' | 'pro';
+  status: 'pending' | 'success' | 'failed';
+  payment_proof: string | null;
+  activated_by: number | null;
+  activated_at: string | null;
+  created_at: string;
+}
+
 let data: LocalData = { users: [], appointments: [], payments: [] };
 
 export const initDatabase = async () => {
@@ -35,6 +64,22 @@ export const query = async (text: string, params: any[] = []) => {
   if (t.startsWith('SELECT')) {
     if (t.includes('FROM USERS')) {
       const param = params[0];
+      // Support role-based queries
+      if (t.includes('WHERE ROLE =')) {
+        const rows = data.users.filter(u => u.role === param);
+        return { rows };
+      }
+      // Support expiration queries
+      if (t.includes('WHERE PLAN_EXPIRE_AT')) {
+        const targetDate = new Date(param);
+        const rows = data.users.filter(u => {
+          if (!u.plan_expire_at) return false;
+          const expireDate = new Date(u.plan_expire_at);
+          return expireDate <= targetDate && u.plan !== 'free';
+        });
+        return { rows };
+      }
+      // Default: email or id lookup
       const rows = data.users.filter(u => u.email === param || u.id === param);
       return { rows };
     }
@@ -54,66 +99,29 @@ export const query = async (text: string, params: any[] = []) => {
       const rows = data.appointments.filter(a => a.user_id === userId);
       return { rows };
     }
-
     if (t.includes('FROM PAYMENTS')) {
-      console.log('--- DB QUERY: FROM PAYMENTS ---');
-      console.log('Query Text:', t);
-
-      // Handle Admin Dashboard Join Query
-      // The query in admin.service.ts is: SELECT ... FROM PAYMENTS p JOIN USERS u ...
-      if (t.includes('JOIN USERS')) {
-        console.log('Detected ADMIN JOIN Query');
-
-        // Filter for pending_review if requested
-        let filtered = data.payments;
-        if (t.includes("'PENDING_REVIEW'")) {
-          console.log('Filtering for pending_review');
-          filtered = filtered.filter(p => p.status === 'pending_review');
-        }
-
-        const rows = filtered.map(p => {
-          const user = data.users.find(u => u.id === p.user_id);
-          // Explicitly construct the result to ensure all fields are present
-          return {
-            id: p.id,
-            user_id: p.user_id,
-            provider: p.provider,
-            transaction_id: p.transaction_id,
-            amount: p.amount,
-            plan: p.plan,
-            status: p.status,
-            phone: p.phone,
-            created_at: p.created_at,
-            user_name: user ? user.name : 'Inconnu',
-            user_email: user ? user.email : 'Inconnu'
-          };
-        })
-          .sort((a, b) => {
-            const dateA = new Date(a.created_at || 0).getTime();
-            const dateB = new Date(b.created_at || 0).getTime();
-            return dateB - dateA;
-          });
-
-        console.log('Returning rows:', rows.length);
-        if (rows.length > 0) console.log('Sample Row:', rows[0]);
+      // Support pending payments query
+      if (t.includes('WHERE STATUS =')) {
+        const status = params[0];
+        const rows = data.payments.filter(p => p.status === status);
         return { rows };
       }
-
-      // Simple select (duplicate check or other)
+      // Support transaction lookup
       if (t.includes('WHERE TRANSACTION_ID =')) {
         const txId = params[0];
         const rows = data.payments.filter(p => p.transaction_id === txId);
-        console.log(`[DB] Checking duplicate for ${txId}: ${rows.length} found`);
         return { rows };
       }
-
-      return { rows: data.payments };
+      // Support user payments
+      const userId = params[0];
+      const rows = data.payments.filter(p => p.user_id === userId);
+      return { rows };
     }
   }
 
   if (t.startsWith('INSERT INTO USERS')) {
     const nextId = data.users.length > 0 ? Math.max(...data.users.map(u => u.id)) + 1 : 1;
-    const newUser = {
+    const newUser: User = {
       id: nextId,
       name: params[0],
       email: params[1],
@@ -121,6 +129,10 @@ export const query = async (text: string, params: any[] = []) => {
       plan: 'free',
       appointment_limit: 5,
       plan_expire_at: null,
+      role: 'user',
+      notification_preference: 'email',
+      whatsapp_number: null,
+      last_notification_sent: null,
       created_at: new Date().toISOString()
     };
     data.users.push(newUser);
@@ -184,7 +196,7 @@ export const query = async (text: string, params: any[] = []) => {
 
   if (t.startsWith('INSERT INTO PAYMENTS')) {
     const nextId = data.payments.length > 0 ? Math.max(...data.payments.map(p => p.id)) + 1 : 1;
-    const newPayment = {
+    const newPayment: Payment = {
       id: nextId,
       user_id: params[0],
       provider: params[1],
@@ -192,7 +204,9 @@ export const query = async (text: string, params: any[] = []) => {
       amount: params[3],
       plan: params[4],
       status: params[5] || 'pending',
-      phone: params[6] || null,
+      payment_proof: params[6] || null,
+      activated_by: null,
+      activated_at: null,
       created_at: new Date().toISOString()
     };
     data.payments.push(newPayment);
@@ -201,6 +215,21 @@ export const query = async (text: string, params: any[] = []) => {
   }
 
   if (t.startsWith('UPDATE PAYMENTS')) {
+    // Handle activation by admin
+    if (t.includes('SET STATUS =') && t.includes('ACTIVATED_BY =')) {
+      const status = params[0];
+      const activatedBy = params[1];
+      const paymentId = params[2];
+      const p = data.payments.find(pm => pm.id === paymentId);
+      if (p) {
+        p.status = status;
+        p.activated_by = activatedBy;
+        p.activated_at = new Date().toISOString();
+        await save();
+        return { rows: [p] };
+      }
+    }
+    // Handle status update by transaction ID
     const status = params[0];
     const transactionId = params[1];
     const p = data.payments.find(pm => pm.transaction_id === transactionId);

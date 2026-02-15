@@ -163,6 +163,39 @@ const updateProfile = async () => {
               </div>
           </div>
       </div>
+
+      <!-- Billing & Subscription Section -->
+      <div class="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-stone-200/50 border border-white/50 space-y-8">
+          <div class="flex items-center justify-between">
+              <h3 class="text-xl font-bold text-[#4a3728] flex items-center gap-3">
+                  <Smartphone class="w-6 h-6 text-primary" /> Abonnement & Facturation
+              </h3>
+              <div class="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-black uppercase tracking-widest">
+                  Plan {{ authStore.user?.plan }}
+              </div>
+          </div>
+          
+          <div class="p-6 bg-surface rounded-[2rem] border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div class="space-y-1">
+                  <p class="text-xs font-black uppercase text-gray-400">Statut de l'abonnement</p>
+                  <p class="font-bold text-[#4a3728]">
+                      {{ authStore.user?.plan === 'free' ? 'Version Gratuite (Illimitée)' : 'Abonnement Actif' }}
+                  </p>
+                  <p v-if="authStore.user?.plan_expire_at" class="text-xs text-gray-500">
+                      Expire le : {{ new Date(authStore.user.plan_expire_at).toLocaleDateString('fr-FR') }}
+                  </p>
+              </div>
+              
+              <div v-if="authStore.user?.plan !== 'pro'" class="flex gap-4">
+                  <router-link to="/pricing" class="px-6 py-3 bg-secondary text-primary-dark rounded-xl font-black text-xs hover:scale-[1.02] transition-all shadow-md">
+                      Améliorer mon plan
+                  </router-link>
+              </div>
+              <div v-else class="text-primary font-black text-xs flex items-center gap-2">
+                  <Lock class="w-4 h-4" /> Plan Professional Activé
+              </div>
+          </div>
+      </div>
     </div>
   </AppLayout>
 </template>

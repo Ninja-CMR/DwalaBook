@@ -366,6 +366,33 @@ const currentLimit = computed(() => authStore.user?.appointment_limit || 5);
                 </div>
               </div>
            </div>
+
+           <!-- Multi-staff Widget (Pro Only) -->
+           <div v-if="authStore.isPro" class="bg-primary-dark p-8 rounded-[3rem] text-white space-y-6 shadow-xl relative overflow-hidden border border-white/10" v-motion-fade>
+               <div class="relative z-10">
+                  <h4 class="text-xs font-black uppercase tracking-[0.2em] text-secondary-light mb-4">Estimation Chiffre d'Affaires</h4>
+                  <div class="flex items-center gap-4">
+                      <div class="p-3 bg-white/10 rounded-2xl">
+                          <TrendingUp class="w-8 h-8 text-secondary" />
+                      </div>
+                      <div>
+                          <p class="text-3xl font-black">~{{ (todayAppointmentsCount * 5000).toLocaleString() }} F</p>
+                          <p class="text-[10px] text-primary-light uppercase font-bold">Projection aujourd'hui</p>
+                      </div>
+                  </div>
+                  <div class="mt-8 space-y-3">
+                      <div class="flex justify-between text-xs font-bold">
+                          <span>Objectif Hebdo</span>
+                          <span>{{ Math.round((weekAppointmentsCount / 20) * 100) }}%</span>
+                      </div>
+                      <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                          <div class="h-full bg-secondary transition-all duration-1000" :style="{ width: `${Math.min((weekAppointmentsCount / 20) * 100, 100)}%` }"></div>
+                      </div>
+                  </div>
+               </div>
+               <!-- Decor -->
+               <div class="absolute top-0 right-0 w-32 h-32 bg-secondary opacity-5 rounded-full translate-x-1/2 -translate-y-1/2"></div>
+           </div>
         </div>
       </div>
     </div>

@@ -64,19 +64,10 @@
       "name": "Sandrine Coiffure",
       "email": "sandrinecoiffure@gmail.com",
       "password": "$2b$10$MQHsrlsgi1kOCQHN.U6dq.Rqei59j/ay84pDXJyY/0wbFECqeH0DO",
-      "plan": "free",
-      "appointment_limit": 5,
-      "created_at": "2026-02-02T19:37:20.487Z"
-    },
-    {
-      "id": 10,
-      "name": "Lao Sarl",
-      "email": "laosarl@gmail.com",
-      "password": "$2b$10$XzbdtCL4oHgX19Mod/ZwCe2sLGuE60G/VcdzGUntaagZ2qwXlq4n2",
       "plan": "starter",
       "appointment_limit": 999999,
-      "plan_expire_at": "2026-03-09T13:16:26.043Z",
-      "created_at": "2026-02-07T11:18:24.565Z"
+      "created_at": "2026-02-02T19:37:20.487Z",
+      "plan_expire_at": "2026-03-06T23:23:10.167Z"
     }
   ],
   "appointments": [
@@ -205,7 +196,7 @@
       "phone": "658147966",
       "date": "2026-02-25T11:39:00.000Z",
       "staff_name": "Équipe DwalaBook",
-      "status": "scheduled",
+      "status": "confirmed",
       "created_at": "2026-02-02T19:39:17.516Z"
     },
     {
@@ -245,7 +236,7 @@
       "phone": "",
       "date": "2026-03-11T13:42:00.000Z",
       "staff_name": "Équipe DwalaBook",
-      "status": "scheduled",
+      "status": "confirmed",
       "created_at": "2026-02-02T19:42:44.861Z"
     },
     {
@@ -407,56 +398,53 @@
     },
     {
       "id": 11,
-      "user_id": 10,
-      "provider": "manual",
-      "transaction_id": "PP23456",
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_11KXVASWI",
       "amount": 5000,
       "plan": "starter",
-      "status": "approved",
-      "created_at": "2026-02-07T11:58:55.119Z"
+      "status": "pending",
+      "created_at": "2026-02-04T22:53:21.503Z"
     },
     {
       "id": 12,
-      "user_id": 10,
-      "provider": "manual",
-      "transaction_id": "PP2340",
-      "amount": 5000,
-      "plan": "starter",
-      "status": "approved",
-      "created_at": "2026-02-07T12:00:29.198Z"
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_BSL0ZZSXK",
+      "amount": 10000,
+      "plan": "pro",
+      "status": "pending",
+      "created_at": "2026-02-04T23:00:21.182Z"
     },
     {
       "id": 13,
-      "user_id": 10,
-      "provider": "manual",
-      "transaction_id": "PP23490",
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_S3SIHYVDV",
       "amount": 5000,
       "plan": "starter",
-      "status": "approved",
-      "phone": "696173490",
-      "created_at": "2026-02-07T12:03:34.133Z"
+      "status": "pending",
+      "created_at": "2026-02-04T23:23:09.198Z"
     },
     {
       "id": 14,
-      "user_id": 10,
-      "provider": "manual",
-      "transaction_id": "PP093842",
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_VLYGHTAF2",
       "amount": 10000,
       "plan": "pro",
-      "status": "approved",
-      "phone": "690345421",
-      "created_at": "2026-02-07T12:31:12.211Z"
+      "status": "pending",
+      "created_at": "2026-02-04T23:28:48.265Z"
     },
     {
       "id": 15,
-      "user_id": 10,
-      "provider": "manual",
-      "transaction_id": "PP20984751",
+      "user_id": 9,
+      "provider": "monetbil",
+      "transaction_id": "TXN_J6XB049RS",
       "amount": 10000,
       "plan": "pro",
-      "status": "approved",
-      "phone": "698342156",
-      "created_at": "2026-02-07T12:56:07.755Z"
+      "status": "pending",
+      "created_at": "2026-02-04T23:57:11.419Z"
     }
   ]
 }

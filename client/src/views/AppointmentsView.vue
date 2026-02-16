@@ -139,7 +139,7 @@ const exportToPDF = () => {
             <td style="padding: 12px;">${apt.customer_name}</td>
             <td style="padding: 12px;">${apt.phone}</td>
             <td style="padding: 12px;">${new Date(apt.date).toLocaleString('fr-FR')}</td>
-            <td style="padding: 12px; font-weight: bold; color: #8b5e3c;">${apt.status.toUpperCase()}</td>
+            <td style="padding: 12px; font-weight: bold; color: #8b5e3c;">${(apt.status || 'scheduled').toUpperCase()}</td>
             <td style="padding: 12px;">${apt.staff_name || 'Équipe'}</td>
         </tr>
     `).join('');

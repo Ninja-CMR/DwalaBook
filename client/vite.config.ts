@@ -9,6 +9,7 @@ export default defineConfig({
       '/auth': 'http://localhost:3000',
       '/appointments': 'http://localhost:3000',
       '/payments': 'http://localhost:3000',
+      '/admin': 'http://localhost:3000',
     }
   }
 })

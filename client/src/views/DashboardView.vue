@@ -100,7 +100,7 @@ const currentLimit = computed(() => authStore.user?.appointment_limit || 5);
              <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
                <Sparkles v-if="!authStore.isFree" class="w-3 h-3 text-secondary" />
                <Zap v-else class="w-3 h-3 text-yellow-400" />
-               {{ authStore.isFree ? 'Version Gratuite' : `Plan ${authStore.user?.plan.toUpperCase()}` }}
+               {{ authStore.isFree ? 'Version Gratuite' : `Plan ${authStore.user?.plan?.toUpperCase() || 'STARTER'}` }}
              </div>
              <h1 class="text-4xl md:text-6xl font-black tracking-tighter leading-[1.1]">
                Bonjour, <span class="text-secondary-light">{{ authStore.user?.name.split(' ')[0] || 'Partenaire' }}</span> !

@@ -63,6 +63,9 @@ export const query = async (text: string, params: any[] = []) => {
 
   if (t.startsWith('SELECT')) {
     if (t.includes('FROM USERS')) {
+      if (!t.includes('WHERE')) {
+        return { rows: data.users };
+      }
       const param = params[0];
       // Support role-based queries
       if (t.includes('WHERE ROLE =')) {
@@ -100,6 +103,9 @@ export const query = async (text: string, params: any[] = []) => {
       return { rows };
     }
     if (t.includes('FROM PAYMENTS')) {
+      if (!t.includes('WHERE')) {
+        return { rows: data.payments };
+      }
       // Support pending payments query
       if (t.includes('WHERE STATUS =')) {
         const status = params[0];

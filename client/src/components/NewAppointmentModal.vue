@@ -75,7 +75,7 @@ const handleSubmit = async () => {
           </div>
           <div>
             <h2 class="text-2xl font-black tracking-tight">Nouveau Rendez-vous</h2>
-            <p v-if="!appointmentStore.authStore.isFree" class="text-xs font-bold text-primary-light uppercase tracking-widest">Édition {{ appointmentStore.authStore.user?.plan.toUpperCase() }}</p>
+            <p v-if="!appointmentStore.authStore.isFree" class="text-xs font-bold text-primary-light uppercase tracking-widest">Édition {{ appointmentStore.authStore.user?.plan?.toUpperCase() || 'STARTER' }}</p>
           </div>
         </div>
         <button @click="$emit('close')" class="p-3 text-white/40 hover:text-white transition-all hover:bg-white/10 rounded-2xl relative z-10">

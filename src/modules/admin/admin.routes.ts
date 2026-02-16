@@ -1,4 +1,5 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyReply } from 'fastify';
+import { query } from '../../databases';
 import {
     isAdmin,
     getPendingPaymentsHandler,
@@ -24,13 +25,25 @@ export async function adminRoutes(fastify: FastifyInstance) {
         onRequest: adminMiddleware
     }, activatePaymentHandler);
 
-    // Get all users with subscription status
+    // Reject a specific payment
+    fastify.post('/reject-payment/:id', {
+        onRequest: adminMiddleware
+    }, async (req: any, reply: FastifyReply) => {
+        try {
+            const { id } = req.params;
+            const paymentId = parseInt(id);
+            if (isNaN(paymentId)) return reply.code(400).send({ message: 'ID invalide' });
+
+            await query('UPDATE PAYMENTS SET status = $1 WHERE id = $2', ['failed', paymentId]);
+            return reply.send({ message: 'Paiement rejeté' });
+        } catch (err) {
+            req.log.error(err);
+            return reply.code(500).send({ message: 'Erreur lors du rejet' });
+        }
+    });
+
+    // Get all users
     fastify.get('/users', {
         onRequest: adminMiddleware
     }, getUsersHandler);
-
-    // Manually activate a plan for a user
-    fastify.post('/manual-activate', {
-        onRequest: adminMiddleware
-    }, manualActivateHandler);
 }

@@ -80,7 +80,9 @@ export const getUsersHandler = async (req: FastifyRequest, reply: FastifyReply) 
         const users = result.rows.map((user: any) => {
             const status: any = {
                 ...user,
-                is_active: user.plan !== 'free'
+                is_active: user.plan !== 'free',
+                name: user.name || 'Utilisateur inconnu',
+                email: user.email || 'Pas d\'email'
             };
 
             if (user.plan_expire_at) {

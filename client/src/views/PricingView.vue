@@ -1,15 +1,26 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from '../stores/auth.store';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import api from '../api';
 import { Check, X, Loader2, AlertCircle, Globe, CreditCard, Smartphone } from 'lucide-vue-next';
 import ManualPaymentModal from '../components/ManualPaymentModal.vue';
 
+const route = useRoute();
 const authStore = useAuthStore();
 const router = useRouter();
 const isProcessing = ref<string | null>(null);
 const error = ref<string | null>(null);
+
+onMounted(() => {
+  if (route.query.selected) {
+    const planId = route.query.selected as string;
+    const plan = plans.find(p => p.id === planId);
+    if (plan) {
+      showPaymentOptions(planId as any, plan.rawPrice || 0);
+    }
+  }
+});
 
 const manualPaymentData = ref({
   isOpen: false,
@@ -77,7 +88,7 @@ const selectedPlan = ref<any>(null);
 
 const showPaymentOptions = (id: 'starter' | 'pro', amount: number) => {
   if (!authStore.isAuthenticated) {
-    router.push('/login');
+    router.push({ path: '/register', query: { plan: id } });
     return;
   }
   selectedPlan.value = { id, amount };

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useAuthStore } from '../stores/auth.store';
-import { Settings, Bell, Lock, Smartphone, MessageCircle, User, RefreshCw } from 'lucide-vue-next';
+import { Settings, Bell, Lock, Smartphone, MessageCircle, User, RefreshCw, LogOut } from 'lucide-vue-next';
 import AppLayout from '../components/AppLayout.vue';
 import api from '../api';
 
@@ -195,6 +195,23 @@ const updateProfile = async () => {
                   <Lock class="w-4 h-4" /> Plan Professional Activé
               </div>
           </div>
+      </div>
+
+      <!-- Logout Section -->
+      <div class="bg-red-50/50 rounded-[2.5rem] border-2 border-red-100 p-8 sm:p-12" v-motion-fade>
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div class="text-center sm:text-left">
+            <h4 class="text-xl font-black text-red-600 mb-1">Session</h4>
+            <p class="text-gray-500 font-medium italic text-sm">Vous allez être déconnecté de DwalaBook.</p>
+          </div>
+          <button 
+            @click="authStore.logout()"
+            class="flex items-center gap-3 px-8 py-4 bg-red-600 text-white rounded-2xl font-black shadow-lg shadow-red-600/20 hover:bg-red-700 hover:-translate-y-1 transition-all active:scale-95 group"
+          >
+            <LogOut class="w-5 h-5" />
+            Déconnexion
+          </button>
+        </div>
       </div>
     </div>
   </AppLayout>

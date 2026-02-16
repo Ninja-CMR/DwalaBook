@@ -229,14 +229,27 @@ export const query = async (text: string, params: any[] = []) => {
         return { rows: [p] };
       }
     }
-    // Handle status update by transaction ID
-    const status = params[0];
-    const transactionId = params[1];
-    const p = data.payments.find(pm => pm.transaction_id === transactionId);
-    if (p) {
-      p.status = status;
-      await save();
-      return { rows: [p] };
+    // Handle proof upload (Specific check for payment_proof in query)
+    if (t.includes('SET PAYMENT_PROOF =')) {
+      const proofUrl = params[0];
+      const transactionId = params[1];
+      const p = data.payments.find(pm => pm.transaction_id === transactionId);
+      if (p) {
+        p.payment_proof = proofUrl;
+        await save();
+        return { rows: [p] };
+      }
+    }
+    // Handle status update by transaction ID (e.g., Stripe)
+    if (t.includes('SET STATUS =') && !t.includes('PAYMENT_PROOF')) {
+      const status = params[0];
+      const transactionId = params[1];
+      const p = data.payments.find(pm => pm.transaction_id === transactionId);
+      if (p) {
+        p.status = status;
+        await save();
+        return { rows: [p] };
+      }
     }
   }
 

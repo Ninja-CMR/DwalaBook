@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth.store';
-import { User, Mail, Lock, Sparkles, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-vue-next';
+import { User, Mail, Lock, Sparkles, ArrowRight, ShieldCheck, CheckCircle2, Ticket } from 'lucide-vue-next';
 
+const route = useRoute();
 const authStore = useAuthStore();
 const router = useRouter();
 const name = ref('');
@@ -12,6 +13,13 @@ const password = ref('');
 const error = ref('');
 const isLoading = ref(false);
 const isSuccess = ref(false);
+const plan = ref<string | null>(null);
+
+onMounted(() => {
+  if (route.query.plan) {
+    plan.value = route.query.plan as string;
+  }
+});
 
 const handleSubmit = async () => {
   if (!name.value || !email.value || !password.value) return;
@@ -24,7 +32,11 @@ const handleSubmit = async () => {
     
     // Snappy transition
     setTimeout(() => {
-       router.replace('/dashboard');
+       if (plan.value) {
+         router.replace({ path: '/pricing', query: { selected: plan.value } });
+       } else {
+         router.replace('/dashboard');
+       }
     }, 800);
   } catch (err: any) {
     if (err.response && err.response.data && err.response.data.message) {
@@ -100,6 +112,9 @@ const handleSubmit = async () => {
 
         <div class="mb-10 text-left">
           <h3 class="text-4xl font-black text-gray-900 mb-2 tracking-tighter">Créer mon espace</h3>
+          <p v-if="plan" class="inline-flex items-center gap-2 px-3 py-1 bg-secondary/10 text-secondary rounded-full text-xs font-black uppercase tracking-widest mb-4">
+             <Ticket class="w-3 h-3" /> Pack {{ plan }} sélectionné
+          </p>
           <p class="text-gray-500 font-medium">Rejoignez DwalaBook pour booster votre activité.</p>
         </div>
 

@@ -65,10 +65,10 @@
       "name": "Sandrine Coiffure",
       "email": "sandrinecoiffure@gmail.com",
       "password": "$2b$10$MQHsrlsgi1kOCQHN.U6dq.Rqei59j/ay84pDXJyY/0wbFECqeH0DO",
-      "plan": "starter",
+      "plan": "pro",
       "appointment_limit": 999999,
       "created_at": "2026-02-02T19:37:20.487Z",
-      "plan_expire_at": "2026-03-06T23:23:10.167Z"
+      "plan_expire_at": "2026-03-18T17:02:13.308Z"
     },
     {
       "id": 10,
@@ -89,9 +89,9 @@
       "name": "AppIng Software",
       "email": "appinfsoftware@gmail.com",
       "password": "$2b$10$DlBWTS7fKaKESU943D4UmeI4Au7mVLdKhB9.pJmRV/Pvei6HUqGNq",
-      "plan": "free",
-      "appointment_limit": 5,
-      "plan_expire_at": null,
+      "plan": "starter",
+      "appointment_limit": 999999,
+      "plan_expire_at": "2026-03-18T17:02:27.190Z",
       "role": "user",
       "notification_preference": "email",
       "whatsapp_number": null,
@@ -387,8 +387,10 @@
       "transaction_id": "TXN_QKYKRUGS4",
       "amount": 5000,
       "plan": "starter",
-      "status": "pending",
-      "created_at": "2026-02-02T20:21:56.519Z"
+      "status": "success",
+      "created_at": "2026-02-02T20:21:56.519Z",
+      "activated_by": 1,
+      "activated_at": "2026-02-16T17:01:57.969Z"
     },
     {
       "id": 2,
@@ -397,8 +399,10 @@
       "transaction_id": "TXN_EZIWP7L5C",
       "amount": 10000,
       "plan": "pro",
-      "status": "pending",
-      "created_at": "2026-02-02T20:22:12.616Z"
+      "status": "success",
+      "created_at": "2026-02-02T20:22:12.616Z",
+      "activated_by": 1,
+      "activated_at": "2026-02-16T17:02:13.302Z"
     },
     {
       "id": 3,
@@ -628,10 +632,10 @@
       "transaction_id": "OM_1771259494988_1KAC0222O",
       "amount": 5000,
       "plan": "starter",
-      "status": "pending",
+      "status": "success",
       "payment_proof": "https://storage.dwalabook.com/proofs/OM_1771259494988_1KAC0222O_Screenshot from 2026-02-16 15-24-56.png",
-      "activated_by": null,
-      "activated_at": null,
+      "activated_by": 1,
+      "activated_at": "2026-02-16T17:02:27.188Z",
       "created_at": "2026-02-16T16:31:34.988Z"
     }
   ]

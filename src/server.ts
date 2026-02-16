@@ -51,10 +51,10 @@ server.setErrorHandler((error: any, request, reply) => {
 });
 
 // Register routes
-server.register(authRoutes, { prefix: '/auth' });
-server.register(appointmentRoutes, { prefix: '/appointments' });
-server.register(paymentRoutes, { prefix: '/payments' });
-server.register(adminRoutes, { prefix: '/admin' });
+server.register(authRoutes, { prefix: '/api/auth' });
+server.register(appointmentRoutes, { prefix: '/api/appointments' });
+server.register(paymentRoutes, { prefix: '/api/payments' });
+server.register(adminRoutes, { prefix: '/api/admin' });
 
 // Graceful shutdown
 ['SIGINT', 'SIGTERM', 'SIGUSR2'].forEach(signal => {

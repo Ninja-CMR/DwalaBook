@@ -65,7 +65,7 @@ const handleFileUpload = async (event: Event) => {
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     // For now, we'll just use a dummy URL for the proof
-    const mockUrl = `https://storage.dwalabook.com/proofs/${transactionId.value}_${file.name}`;
+    const mockUrl = `https://picsum.photos/seed/${transactionId.value}/800/1200`;
     
     await api.post('/payments/manual/upload-proof', {
       transaction_id: transactionId.value,

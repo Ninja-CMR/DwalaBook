@@ -118,6 +118,12 @@ export const query = async (text: string, params: any[] = []) => {
         const rows = data.payments.filter(p => p.transaction_id === txId);
         return { rows };
       }
+      // Support specific payment lookup by ID
+      if (t.includes('WHERE ID =')) {
+        const id = Number(params[0]);
+        const rows = data.payments.filter(p => p.id === id);
+        return { rows };
+      }
       // Support user payments
       const userId = params[0];
       const rows = data.payments.filter(p => p.user_id === userId);

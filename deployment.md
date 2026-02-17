@@ -1,62 +1,91 @@
-# 🚀 Guide de Déploiement (Options Gratuites)
+# 🚀 Guide de Déploiement : DwalaBook SaaS
 
-Ce guide explique comment mettre votre application **DwalaBook** en ligne gratuitement.
+Ce guide détaille la procédure pour mettre votre application en ligne.
 
-## 1. Architecture recommandée
-- **Frontend (Vue.js + Vite)** : [Vercel](https://vercel.com/) (Gratuit, performant, déploiement automatique via GitHub).
-- **Backend (Fastify + Node.js)** : [Render](https://render.com/) (Offre "Free Web Service" disponible).
-- **Base de données** : 
-    - *Actuel* : `database.json`. **Attention** : Sur Render (gratuit), les fichiers créés/modifiés sont supprimés à chaque redémarrage.
-    - *Recommandé* : [Supabase](https://supabase.com/) ou [Neon.tech](https://neon.tech/) (PostgreSQL gratuit) pour une persistance réelle.
+## Architecture
+- **Frontend** : Vue.js 3 + Vite (Hébergé sur [Vercel](https://vercel.com))
+- **Backend** : Node.js + Fastify (Hébergé sur [Render](https://render.com))
+- **Base de Données** :
+  - *Dev/Test* : Fichier JSON (`database.json`)
+  - *Prod* : PostgreSQL (via [Supabase](https://supabase.com) ou [Neon](https://neon.tech))
 
 ---
 
-## 2. Déploiement du Backend (sur Render)
+## 1. Pré-requis
+- Un compte GitHub (le code doit être poussé).
+- Un compte [Vercel](https://vercel.com).
+- Un compte [Render](https://render.com).
 
-1. Créez un compte sur [Render.com](https://render.com/).
-2. Créez un nouveau **Web Service** et connectez votre dépôt GitHub.
-3. Configurez les paramètres :
+---
+
+## 2. Déploiement du Backend (Render)
+
+1. **Créer le service** :
+   - Allez sur le Dashboard Render -> "New" -> "Web Service".
+   - Connectez votre dépôt GitHub `DwalaBook`.
+   - Donnez un nom (ex: `dwalabook-api`).
+
+2. **Configuration** :
    - **Environment** : `Node`
    - **Build Command** : `npm install && npm run build`
    - **Start Command** : `npm start`
-4. Ajoutez les **Environment Variables** (Secret Files ou variables) :
-   - `JWT_SECRET` : Une clé secrète aléatoire.
-   - `PORT` : 3000 (Render gère cela automatiquement généralement).
-   - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` : Vos identifiants e-mail pour les rappels.
+   - **Instance Type** : Free
 
-> [!WARNING]
-> Avec l'offre gratuite de Render, le serveur "s'endort" après 15 minutes d'inactivité. Le premier chargement après une pause peut prendre ~30 secondes.
+3. **Variables d'Environnement** (Section "Environment") :
+   Ajoutez les clés suivantes :
+   ```env
+   JWT_SECRET=votre_cle_super_secrete_aleatoire
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=votre_email@gmail.com
+   SMTP_PASS=votre_mot_de_passe_application_google
+   CLIENT_URL=https://votre-projet-vercel.app (URL du frontend, à mettre à jour après le déploiement Vercel)
+   ```
+   > **Note sur la BDD** : Par défaut, l'application utilise `database.json`. Sur Render gratuit, ce fichier est réinitialisé régulièrement. Pour la production, ajoutez `DATABASE_URL` (voir section 4).
 
----
-
-## 3. Déploiement du Frontend (sur Vercel)
-
-1. Créez un compte sur [Vercel.com](https://vercel.com/).
-2. Importez votre projet GitHub.
-3. Sélectionnez le dossier `client` comme dossier racine du projet.
-4. Configurez les paramètres :
-   - **Framework Preset** : `Vite`
-   - **Build Command** : `npm run build`
-   - **Output Directory** : `dist`
-5. Ajoutez la variable d'environnement :
-   - `VITE_API_URL` : L'URL de votre backend sur Render (ex: `https://votre-api.onrender.com`).
+4. **Déployer** : Cliquez sur "Create Web Service".
+   - Notez l'URL fournie (ex: `https://dwalabook-api.onrender.com`).
 
 ---
 
-## 4. Configuration finale (Proxy et API)
+## 3. Déploiement du Frontend (Vercel)
 
-Puisque nous utilisons des domaines différents en production (ex: `dwalabook.vercel.app` et `dwalabook-api.onrender.com`), le proxy Vite ne fonctionne pas en production.
+1. **Créer le projet** :
+   - Allez sur le Dashboard Vercel -> "Add New..." -> "Project".
+   - Importez le dépôt `DwalaBook`.
 
-L'application est déjà configurée pour utiliser `VITE_API_URL` s'il est présent. Assurez-vous que l'URL du backend dans la variable Vercel finit bien **sans** slash `/api`.
+2. **Configuration du dossier** :
+   - **Framework Preset** : Vite
+   - **Root Directory** : Cliquez sur "Edit" et sélectionnez le dossier `client`. 👈 **Important**
+
+3. **Variables d'Environnement** :
+   - `VITE_API_URL` : L'URL de votre backend Render (ex: `https://dwalabook-api.onrender.com`).
+   - **Attention** : Pas de slash `/` à la fin, et pas de `/api`. Juste la racine.
+
+4. **Déployer** : Cliquez sur "Deploy".
 
 ---
 
-## 5. Migration vers une base de données réelle (PostgreSQL)
-Le projet est prêt à utiliser `pg` (PostgreSQL). Pour passer du JSON à SQL :
-1. Créez une instance gratuite sur Supabase.
-2. Copiez la `DATABASE_URL`.
-3. Mettez à jour le fichier `src/databases/index.ts` pour utiliser le client `pg` au lieu de lire le fichier JSON. (Je peux vous aider pour cette étape quand vous serez prêt).
+## 4. Migration vers PostgreSQL (Production)
+
+Pour éviter de perdre vos données, migrez vers une vraie base de données.
+
+1. **Créer une BDD** sur Supabase ou Neon (offres gratuites).
+2. **Récupérer la connection string** (ex: `postgres://user:pass@host:port/db`).
+3. **Mettre à jour Render** :
+   - Ajoutez la variable `DATABASE_URL` avec votre connection string.
+4. **Migration des données** (Optionnel) :
+   - Si vous voulez conserver vos utilisateurs actuels (dont l'admin), exécutez le script `migrate_to_pg.js` **localement** :
+     ```bash
+     # Dans votre terminal local
+     export DATABASE_URL="votre_connection_string_production"
+     node migrate_to_pg.js
+     ```
+   - Ensuite, il faudra modifier `src/databases/index.ts` pour qu'il se connecte à Postgres si `DATABASE_URL` est présent (cette modification n'est pas encore active dans le code actuel, demandez-la si nécessaire).
 
 ---
 
-Besoin d'aide pour une étape spécifique ? N'hésitez pas !
+## 5. Vérification
+- Connectez-vous sur le Frontend (Vercel).
+- Tentez de vous connecter avec `admin@dwalabook.com`.
+- Vérifiez que les données chargent bien.

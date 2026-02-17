@@ -7,7 +7,7 @@ exports.stripeWebhookHandler = exports.uploadProofHandler = exports.initiateManu
 const payments_service_1 = require("./payments.service");
 const stripe_1 = __importDefault(require("stripe"));
 const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2024-12-18.acacia'
+    apiVersion: '2026-01-28.clover'
 });
 /**
  * Initiate Stripe payment

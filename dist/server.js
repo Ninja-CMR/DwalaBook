@@ -49,10 +49,10 @@ server.setErrorHandler((error, request, reply) => {
     reply.status(500).send({ message: 'Internal Server Error', error: error.message });
 });
 // Register routes
-server.register(auth_routes_1.authRoutes, { prefix: '/auth' });
-server.register(appointments_routes_1.appointmentRoutes, { prefix: '/appointments' });
-server.register(payments_routes_1.paymentRoutes, { prefix: '/payments' });
-server.register(admin_routes_1.adminRoutes, { prefix: '/admin' });
+server.register(auth_routes_1.authRoutes, { prefix: '/api/auth' });
+server.register(appointments_routes_1.appointmentRoutes, { prefix: '/api/appointments' });
+server.register(payments_routes_1.paymentRoutes, { prefix: '/api/payments' });
+server.register(admin_routes_1.adminRoutes, { prefix: '/api/admin' });
 // Graceful shutdown
 ['SIGINT', 'SIGTERM', 'SIGUSR2'].forEach(signal => {
     process.on(signal, async () => {

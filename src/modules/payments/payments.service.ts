@@ -213,3 +213,21 @@ export const activateManualPayment = async (paymentId: number, adminId: number) 
         subscription
     };
 };
+/**
+ * Update payment status (used by admin)
+ */
+export const updatePaymentStatus = async (transactionId: string, status: string) => {
+    const result = await query(
+        'UPDATE PAYMENTS SET status = $1 WHERE transaction_id = $2 RETURNING *',
+        [status, transactionId]
+    );
+
+    const payment = result.rows[0];
+    if (!payment) {
+        throw new Error('Payment not found');
+    }
+
+    console.log(`[PAYMENT] Status updated to ${status} for transaction ${transactionId}`);
+
+    return payment;
+};

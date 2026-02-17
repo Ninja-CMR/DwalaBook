@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { X, Upload, CheckCircle2, Copy, ExternalLink, Loader2, AlertCircle } from 'lucide-vue-next';
+import { X, Upload, CheckCircle2, Copy, Loader2, AlertCircle } from 'lucide-vue-next';
 import api from '../api';
 
 const props = defineProps<{

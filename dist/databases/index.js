@@ -33,6 +33,9 @@ const query = async (text, params = []) => {
     const t = text.trim().toUpperCase();
     if (t.startsWith('SELECT')) {
         if (t.includes('FROM USERS')) {
+            if (!t.includes('WHERE')) {
+                return { rows: data.users };
+            }
             const param = params[0];
             // Support role-based queries
             if (t.includes('WHERE ROLE =')) {
@@ -71,6 +74,9 @@ const query = async (text, params = []) => {
             return { rows };
         }
         if (t.includes('FROM PAYMENTS')) {
+            if (!t.includes('WHERE')) {
+                return { rows: data.payments };
+            }
             // Support pending payments query
             if (t.includes('WHERE STATUS =')) {
                 const status = params[0];
@@ -81,6 +87,12 @@ const query = async (text, params = []) => {
             if (t.includes('WHERE TRANSACTION_ID =')) {
                 const txId = params[0];
                 const rows = data.payments.filter(p => p.transaction_id === txId);
+                return { rows };
+            }
+            // Support specific payment lookup by ID
+            if (t.includes('WHERE ID =')) {
+                const id = Number(params[0]);
+                const rows = data.payments.filter(p => p.id === id);
                 return { rows };
             }
             // Support user payments
@@ -194,14 +206,27 @@ const query = async (text, params = []) => {
                 return { rows: [p] };
             }
         }
-        // Handle status update by transaction ID
-        const status = params[0];
-        const transactionId = params[1];
-        const p = data.payments.find(pm => pm.transaction_id === transactionId);
-        if (p) {
-            p.status = status;
-            await save();
-            return { rows: [p] };
+        // Handle proof upload (Specific check for payment_proof in query)
+        if (t.includes('SET PAYMENT_PROOF =')) {
+            const proofUrl = params[0];
+            const transactionId = params[1];
+            const p = data.payments.find(pm => pm.transaction_id === transactionId);
+            if (p) {
+                p.payment_proof = proofUrl;
+                await save();
+                return { rows: [p] };
+            }
+        }
+        // Handle status update by transaction ID (e.g., Stripe)
+        if (t.includes('SET STATUS =') && !t.includes('PAYMENT_PROOF')) {
+            const status = params[0];
+            const transactionId = params[1];
+            const p = data.payments.find(pm => pm.transaction_id === transactionId);
+            if (p) {
+                p.status = status;
+                await save();
+                return { rows: [p] };
+            }
         }
     }
     return { rows: [] };

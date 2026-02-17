@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '../components/AppLayout.vue';
-import { onMounted, computed, ref } from 'vue';
+import { onMounted, computed } from 'vue';
 import { useAppointmentStore } from '../stores/appointments.store';
 import { useAuthStore } from '../stores/auth.store';
 import { useRouter } from 'vue-router';
@@ -208,7 +208,7 @@ const currentLimit = computed(() => authStore.user?.appointment_limit || 5);
              <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
                 <p class="text-xs font-black uppercase tracking-widest text-gray-400">Heures de pointe</p>
                 <div class="space-y-2">
-                    <div v-for="(item, index) in peakHours" :key="item[0]" class="flex items-center justify-between text-sm font-bold">
+                    <div v-for="item in peakHours" :key="item[0]" class="flex items-center justify-between text-sm font-bold">
                         <span class="flex items-center gap-2"><Clock class="w-3 h-3 text-primary" /> {{ item[0] }}</span>
                         <span class="bg-gray-100 px-2 rounded-md text-xs">{{ item[1] }} RDV</span>
                     </div>
@@ -220,7 +220,7 @@ const currentLimit = computed(() => authStore.user?.appointment_limit || 5);
              <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
                 <p class="text-xs font-black uppercase tracking-widest text-gray-400">Top Clients</p>
                  <div class="space-y-2">
-                    <div v-for="(item, index) in topClients" :key="item[0]" class="flex items-center justify-between text-sm font-bold">
+                    <div v-for="item in topClients" :key="item[0]" class="flex items-center justify-between text-sm font-bold">
                         <span class="flex items-center gap-2 truncate max-w-[120px]"><UserCheck class="w-3 h-3 text-secondary-dark" /> {{ item[0] }}</span>
                         <span class="text-primary">{{ item[1] }}x</span>
                     </div>

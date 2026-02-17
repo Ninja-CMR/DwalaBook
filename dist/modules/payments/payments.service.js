@@ -3,13 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.activateManualPayment = exports.uploadPaymentProof = exports.createManualPaymentRequest = exports.handleStripeWebhook = exports.initiateStripePayment = void 0;
+exports.updatePaymentStatus = exports.activateManualPayment = exports.uploadPaymentProof = exports.createManualPaymentRequest = exports.handleStripeWebhook = exports.initiateStripePayment = void 0;
 const stripe_1 = __importDefault(require("stripe"));
 const databases_1 = require("../../databases");
 const subscription_service_1 = require("../subscriptions/subscription.service");
 const notifications_service_1 = require("../notifications/notifications.service");
 const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2024-12-18.acacia'
+    apiVersion: '2026-01-28.clover'
 });
 /**
  * Create a Stripe Checkout Session for subscription payment
@@ -158,3 +158,16 @@ const activateManualPayment = async (paymentId, adminId) => {
     };
 };
 exports.activateManualPayment = activateManualPayment;
+/**
+ * Update payment status (used by admin)
+ */
+const updatePaymentStatus = async (transactionId, status) => {
+    const result = await (0, databases_1.query)('UPDATE PAYMENTS SET status = $1 WHERE transaction_id = $2 RETURNING *', [status, transactionId]);
+    const payment = result.rows[0];
+    if (!payment) {
+        throw new Error('Payment not found');
+    }
+    console.log(`[PAYMENT] Status updated to ${status} for transaction ${transactionId}`);
+    return payment;
+};
+exports.updatePaymentStatus = updatePaymentStatus;

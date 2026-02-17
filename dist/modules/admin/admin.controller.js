@@ -23,10 +23,14 @@ const getPendingPaymentsHandler = async (req, reply) => {
         const payments = result.rows;
         // Enrich with user info
         const enrichedPayments = await Promise.all(payments.map(async (payment) => {
-            const userResult = await (0, databases_1.query)('SELECT id, name, email FROM USERS WHERE id = $1', [payment.user_id]);
+            const userResult = await (0, databases_1.query)('SELECT id, name, email, whatsapp_number FROM USERS WHERE id = $1', [payment.user_id]);
+            const user = userResult.rows[0] || {};
             return {
                 ...payment,
-                user: userResult.rows[0]
+                user_name: user.name || 'Inconnu',
+                user_email: user.email || 'Inconnu',
+                phone: user.whatsapp_number || 'Non renseigné',
+                user: user // Keep for backward compatibility if needed, but the frontend uses the flat fields
             };
         }));
         return reply.send({ payments: enrichedPayments });
@@ -71,7 +75,9 @@ const getUsersHandler = async (req, reply) => {
         const users = result.rows.map((user) => {
             const status = {
                 ...user,
-                is_active: user.plan !== 'free'
+                is_active: user.plan !== 'free',
+                name: user.name || 'Utilisateur inconnu',
+                email: user.email || 'Pas d\'email'
             };
             if (user.plan_expire_at) {
                 const expireDate = new Date(user.plan_expire_at);

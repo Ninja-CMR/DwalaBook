@@ -4,11 +4,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.query = exports.initDatabase = void 0;
+const pg_1 = require("pg");
 const promises_1 = __importDefault(require("fs/promises"));
 const path_1 = __importDefault(require("path"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const DB_FILE = path_1.default.join(__dirname, '../../database.json');
 let data = { users: [], appointments: [], payments: [] };
+let pool = null;
+if (process.env.DATABASE_URL) {
+    console.log('🔌 Connecting to PostgreSQL...');
+    pool = new pg_1.Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+    });
+}
 const initDatabase = async () => {
+    if (pool) {
+        try {
+            await pool.query('SELECT NOW()');
+            console.log('✅ Connected to PostgreSQL successfully');
+            return;
+        }
+        catch (err) {
+            console.error('❌ Failed to connect to PostgreSQL, falling back to JSON:', err);
+            pool = null; // Fallback to JSON
+        }
+    }
     try {
         const content = await promises_1.default.readFile(DB_FILE, 'utf-8');
         data = JSON.parse(content);
@@ -18,11 +40,11 @@ const initDatabase = async () => {
             data.appointments = [];
         if (!data.payments)
             data.payments = [];
-        console.log('JSON Database loaded successfully');
+        console.log('📂 JSON Database loaded successfully');
     }
     catch (err) {
         await save();
-        console.log('JSON Database initialized');
+        console.log('📂 JSON Database initialized');
     }
 };
 exports.initDatabase = initDatabase;
@@ -30,6 +52,11 @@ const save = async () => {
     await promises_1.default.writeFile(DB_FILE, JSON.stringify(data, null, 2));
 };
 const query = async (text, params = []) => {
+    // 1. PostgreSQL Strategy
+    if (pool) {
+        return pool.query(text, params);
+    }
+    // 2. JSON File Strategy (Fallback)
     const t = text.trim().toUpperCase();
     if (t.startsWith('SELECT')) {
         if (t.includes('FROM USERS')) {
@@ -58,7 +85,7 @@ const query = async (text, params = []) => {
             return { rows };
         }
         if (t.includes('FROM APPOINTMENTS')) {
-            // Handle the specialized join query I added for reminders
+            // Handle the specialized join query
             if (t.includes('JOIN USERS u ON a.user_id = u.id')) {
                 const rows = data.appointments
                     .filter(a => a.status === 'scheduled')

@@ -1,8 +1,12 @@
+import { Pool } from 'pg';
 import fs from 'fs/promises';
 import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const DB_FILE = path.join(__dirname, '../../database.json');
 
+// Interface definitions kept for JSON fallback
 interface LocalData {
   users: any[];
   appointments: any[];
@@ -39,18 +43,38 @@ interface Payment {
 }
 
 let data: LocalData = { users: [], appointments: [], payments: [] };
+let pool: Pool | null = null;
+
+if (process.env.DATABASE_URL) {
+  console.log('🔌 Connecting to PostgreSQL...');
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+}
 
 export const initDatabase = async () => {
+  if (pool) {
+    try {
+      await pool.query('SELECT NOW()');
+      console.log('✅ Connected to PostgreSQL successfully');
+      return;
+    } catch (err) {
+      console.error('❌ Failed to connect to PostgreSQL, falling back to JSON:', err);
+      pool = null; // Fallback to JSON
+    }
+  }
+
   try {
     const content = await fs.readFile(DB_FILE, 'utf-8');
     data = JSON.parse(content);
     if (!data.users) data.users = [];
     if (!data.appointments) data.appointments = [];
     if (!data.payments) data.payments = [];
-    console.log('JSON Database loaded successfully');
+    console.log('📂 JSON Database loaded successfully');
   } catch (err) {
     await save();
-    console.log('JSON Database initialized');
+    console.log('📂 JSON Database initialized');
   }
 };
 
@@ -59,6 +83,12 @@ const save = async () => {
 };
 
 export const query = async (text: string, params: any[] = []) => {
+  // 1. PostgreSQL Strategy
+  if (pool) {
+    return pool.query(text, params);
+  }
+
+  // 2. JSON File Strategy (Fallback)
   const t = text.trim().toUpperCase();
 
   if (t.startsWith('SELECT')) {
@@ -87,7 +117,7 @@ export const query = async (text: string, params: any[] = []) => {
       return { rows };
     }
     if (t.includes('FROM APPOINTMENTS')) {
-      // Handle the specialized join query I added for reminders
+      // Handle the specialized join query
       if (t.includes('JOIN USERS u ON a.user_id = u.id')) {
         const rows = data.appointments
           .filter(a => a.status === 'scheduled')

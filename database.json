@@ -6,35 +6,50 @@
       "email": "lanoushop@gmail.com",
       "password": "$2b$10$QjKXAaE0mR8dNwtWUU//guyPZuE6YwgdmhGASHvvnCQfN0vi9WNiC",
       "created_at": "2026-01-27T17:16:42.617Z",
-      "role": "admin"
+      "role": "admin",
+      "business_slug": null,
+      "reset_token": null,
+      "reset_token_expires": null
     },
     {
       "id": 2,
       "name": "Cyrille Ojit",
       "email": "lanoshop@gmail.com",
       "password": "$2b$10$tzcYgkaEzQ/IrZCsLIQs.eLL/LDWsnuWr1WSFRxLsFc9/9LeBAZSK",
-      "created_at": "2026-01-27T17:19:22.938Z"
+      "created_at": "2026-01-27T17:19:22.938Z",
+      "business_slug": null,
+      "reset_token": null,
+      "reset_token_expires": null
     },
     {
       "id": 3,
       "name": "Perspiciatis nostru",
       "email": "vyxutyqeh@mailinator.com",
       "password": "$2b$10$RY5k9V3dFpl8cMrYXgi3JeUo0tm.Lkoee0rxHtPduAX98I8A56E16",
-      "created_at": "2026-01-27T17:26:53.057Z"
+      "created_at": "2026-01-27T17:26:53.057Z",
+      "business_slug": null,
+      "reset_token": null,
+      "reset_token_expires": null
     },
     {
       "id": 4,
       "name": "Quia animi nobis co",
       "email": "kybigy@mailinator.com",
       "password": "$2b$10$kkTo2EwpNxJ32KlcobiRUOTi2ztmOSWffxmVwUaG7M9G/J5FSx8si",
-      "created_at": "2026-01-27T17:27:05.761Z"
+      "created_at": "2026-01-27T17:27:05.761Z",
+      "business_slug": null,
+      "reset_token": null,
+      "reset_token_expires": null
     },
     {
       "id": 5,
       "name": "Nulla quia non aliqu",
       "email": "siqipuxodo@mailinator.com",
       "password": "$2b$10$e4TGCuTkue61WsP9GQdzdunQzOXZ9S1vle3ptmGbnNY1NFIZTtYmO",
-      "created_at": "2026-01-27T17:33:56.389Z"
+      "created_at": "2026-01-27T17:33:56.389Z",
+      "business_slug": null,
+      "reset_token": null,
+      "reset_token_expires": null
     },
     {
       "id": 6,
@@ -42,7 +57,10 @@
       "email": "lanofdfshop@gmail.com",
       "password": "$2b$10$DrgrqyEMyC8J31YREoEEDeMi7p4f25HMYVmrZ4Owo6zK2itDupdj2",
       "is_premium": false,
-      "created_at": "2026-01-27T17:42:19.930Z"
+      "created_at": "2026-01-27T17:42:19.930Z",
+      "business_slug": null,
+      "reset_token": null,
+      "reset_token_expires": null
     },
     {
       "id": 7,
@@ -50,14 +68,20 @@
       "email": "nieteGroup@gmail.com",
       "password": "$2b$10$vxUN5.GcDHrkRCTC35pQ/.B3kxgpA6XQFLpSjw6od2Ks6c.pM8oc2",
       "is_premium": false,
-      "created_at": "2026-01-27T18:08:55.151Z"
+      "created_at": "2026-01-27T18:08:55.151Z",
+      "business_slug": null,
+      "reset_token": null,
+      "reset_token_expires": null
     },
     {
       "id": 12,
       "name": "Admin DwalaBook ",
       "email": "admin@dwalabook.com",
       "password": "$2b$10$DlBWTS7fKaKESU943D4UmeI4Au7mVLdKhB9.pJmRV/Pvei6HUqGNq",
-      "role": "admin"
+      "role": "admin",
+      "business_slug": null,
+      "reset_token": null,
+      "reset_token_expires": null
     },
     {
       "id": 8,
@@ -65,7 +89,10 @@
       "email": "amin@gmail.com",
       "password": "$2b$10$NZw8RgojQYKjIt0SaS85yeP5VpTXdIRznCLmOdpZA3HBMTNMgV8Wq",
       "is_premium": false,
-      "created_at": "2026-01-28T12:46:56.645Z"
+      "created_at": "2026-01-28T12:46:56.645Z",
+      "business_slug": null,
+      "reset_token": null,
+      "reset_token_expires": null
     },
     {
       "id": 9,
@@ -75,7 +102,10 @@
       "plan": "pro",
       "appointment_limit": 999999,
       "created_at": "2026-02-02T19:37:20.487Z",
-      "plan_expire_at": "2026-03-18T17:02:13.308Z"
+      "plan_expire_at": "2026-03-18T17:02:13.308Z",
+      "business_slug": null,
+      "reset_token": null,
+      "reset_token_expires": null
     },
     {
       "id": 10,
@@ -89,7 +119,10 @@
       "notification_preference": "email",
       "whatsapp_number": null,
       "last_notification_sent": null,
-      "created_at": "2026-02-15T18:01:16.954Z"
+      "created_at": "2026-02-15T18:01:16.954Z",
+      "business_slug": null,
+      "reset_token": null,
+      "reset_token_expires": null
     },
     {
       "id": 11,
@@ -103,7 +136,10 @@
       "notification_preference": "email",
       "whatsapp_number": null,
       "last_notification_sent": null,
-      "created_at": "2026-02-16T16:26:39.385Z"
+      "created_at": "2026-02-16T16:26:39.385Z",
+      "business_slug": null,
+      "reset_token": null,
+      "reset_token_expires": null
     }
   ],
   "appointments": [
@@ -114,6 +150,7 @@
       "phone": "699439022",
       "date": "2026-01-29T21:18:00.000Z",
       "status": "scheduled",
+      "last_reminder_sent": null,
       "created_at": "2026-01-27T17:18:27.958Z"
     },
     {
@@ -123,6 +160,7 @@
       "phone": "696172899",
       "date": "2026-01-28T22:25:00.000Z",
       "status": "scheduled",
+      "last_reminder_sent": null,
       "created_at": "2026-01-27T17:25:50.938Z"
     },
     {
@@ -133,6 +171,7 @@
       "date": "2026-01-26T11:01:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-01-27T19:01:52.775Z"
     },
     {
@@ -143,6 +182,7 @@
       "date": "2026-01-29T11:54:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-01-27T19:54:13.189Z"
     },
     {
@@ -153,6 +193,7 @@
       "date": "2026-01-31T16:54:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-01-27T19:54:50.645Z"
     },
     {
@@ -163,6 +204,7 @@
       "date": "2026-03-04T22:55:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-01-27T19:55:47.579Z"
     },
     {
@@ -173,6 +215,7 @@
       "date": "2026-02-20T17:56:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "scheduled",
+      "last_reminder_sent": null,
       "created_at": "2026-01-27T19:56:19.709Z"
     },
     {
@@ -183,6 +226,7 @@
       "date": "2026-01-31T16:47:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-01-28T12:48:04.873Z"
     },
     {
@@ -193,6 +237,7 @@
       "date": "1986-12-25T12:59:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "scheduled",
+      "last_reminder_sent": null,
       "created_at": "2026-01-28T12:48:18.321Z"
     },
     {
@@ -203,6 +248,7 @@
       "date": "1985-11-08T20:22:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "scheduled",
+      "last_reminder_sent": null,
       "created_at": "2026-01-28T12:50:35.939Z"
     },
     {
@@ -213,6 +259,7 @@
       "date": "2026-01-29T17:52:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "scheduled",
+      "last_reminder_sent": null,
       "created_at": "2026-01-28T12:52:22.281Z"
     },
     {
@@ -223,6 +270,7 @@
       "date": "2026-01-31T18:52:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "scheduled",
+      "last_reminder_sent": null,
       "created_at": "2026-01-28T12:52:47.374Z"
     },
     {
@@ -233,6 +281,7 @@
       "date": "2026-02-25T11:39:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-02T19:39:17.516Z"
     },
     {
@@ -243,6 +292,7 @@
       "date": "2026-03-06T13:41:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-02T19:41:08.109Z"
     },
     {
@@ -253,6 +303,7 @@
       "date": "1983-03-16T00:35:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-02T19:41:40.044Z"
     },
     {
@@ -263,6 +314,7 @@
       "date": "2026-02-25T11:42:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-02T19:42:07.249Z"
     },
     {
@@ -273,6 +325,7 @@
       "date": "2026-03-11T13:42:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-02T19:42:44.861Z"
     },
     {
@@ -284,6 +337,7 @@
       "date": "2026-02-20T16:19:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-07T11:19:08.157Z"
     },
     {
@@ -295,6 +349,7 @@
       "date": "2026-03-08T13:19:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-07T11:19:39.729Z"
     },
     {
@@ -306,6 +361,7 @@
       "date": "2026-02-17T09:20:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-07T11:20:09.999Z"
     },
     {
@@ -317,6 +373,7 @@
       "date": "2026-02-25T15:20:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-07T11:20:49.896Z"
     },
     {
@@ -328,6 +385,7 @@
       "date": "2026-03-05T15:21:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-07T11:21:16.186Z"
     },
     {
@@ -339,6 +397,7 @@
       "date": "2026-02-24T21:27:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-16T16:27:51.570Z"
     },
     {
@@ -350,6 +409,7 @@
       "date": "2026-02-27T16:34:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-16T16:28:43.764Z"
     },
     {
@@ -361,6 +421,7 @@
       "date": "2026-03-26T21:29:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-16T16:29:20.103Z"
     },
     {
@@ -372,6 +433,7 @@
       "date": "2026-03-10T12:30:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-16T16:30:04.621Z"
     },
     {
@@ -383,6 +445,7 @@
       "date": "2026-03-12T22:30:00.000Z",
       "staff_name": "Équipe DwalaBook",
       "status": "confirmed",
+      "last_reminder_sent": null,
       "created_at": "2026-02-16T16:30:43.836Z"
     }
   ],
@@ -645,5 +708,7 @@
       "activated_at": "2026-02-16T17:02:27.188Z",
       "created_at": "2026-02-16T16:31:34.988Z"
     }
-  ]
+  ],
+  "staff": [],
+  "inventory": []
 }

@@ -26,6 +26,30 @@ interface User {
   whatsapp_number: string | null;
   last_notification_sent: string | null;
   created_at: string;
+  // Professional Link & Security
+  business_slug: string | null;
+  reset_token: string | null;
+  reset_token_expires: string | null;
+}
+
+interface Staff {
+  id: number;
+  user_id: number; // The business owner
+  name: string;
+  role: string;
+  specialty: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+interface InventoryItem {
+  id: number;
+  user_id: number;
+  name: string;
+  quantity: number;
+  alert_threshold: number;
+  unit_price: number;
+  created_at: string;
 }
 
 interface Payment {
@@ -42,7 +66,13 @@ interface Payment {
   created_at: string;
 }
 
-let data: LocalData = { users: [], appointments: [], payments: [] };
+let data: LocalData & { staff?: Staff[], inventory?: InventoryItem[] } = {
+  users: [],
+  appointments: [],
+  payments: [],
+  staff: [],
+  inventory: []
+};
 let pool: Pool | null = null;
 
 if (process.env.DATABASE_URL) {
@@ -120,7 +150,7 @@ export const query = async (text: string, params: any[] = []) => {
       // Handle the specialized join query
       if (t.includes('JOIN USERS u ON a.user_id = u.id')) {
         const rows = data.appointments
-          .filter(a => a.status === 'scheduled')
+          .filter(a => a.status === 'scheduled' && !a.last_reminder_sent)
           .map(a => {
             const user = data.users.find(u => u.id === a.user_id);
             return { ...a, plan: user?.plan };
@@ -159,6 +189,16 @@ export const query = async (text: string, params: any[] = []) => {
       const rows = data.payments.filter(p => p.user_id === userId);
       return { rows };
     }
+    if (t.includes('FROM STAFF')) {
+      const userId = params[0];
+      const rows = (data.staff || []).filter(s => s.user_id === userId);
+      return { rows };
+    }
+    if (t.includes('FROM INVENTORY')) {
+      const userId = params[0];
+      const rows = (data.inventory || []).filter(i => i.user_id === userId);
+      return { rows };
+    }
   }
 
   if (t.startsWith('INSERT INTO USERS')) {
@@ -175,7 +215,10 @@ export const query = async (text: string, params: any[] = []) => {
       notification_preference: 'email',
       whatsapp_number: null,
       last_notification_sent: null,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      business_slug: params[3] || null, // Capture slug if provided
+      reset_token: null,
+      reset_token_expires: null
     };
     data.users.push(newUser);
     await save();
@@ -189,9 +232,11 @@ export const query = async (text: string, params: any[] = []) => {
       user_id: params[0],
       customer_name: params[1],
       phone: params[2],
-      email: params[3] || null, // Capture email
+      email: params[3] || null,
       date: params[4],
       staff_name: params[5] || 'Équipe DwalaBook',
+      service: params[6] || null,
+      notes: params[7] || null,
       status: 'scheduled',
       created_at: new Date().toISOString()
     };
@@ -201,14 +246,24 @@ export const query = async (text: string, params: any[] = []) => {
   }
 
   if (t.startsWith('UPDATE APPOINTMENTS')) {
-    const status = params[0];
-    const id = Number(params[1]);
-    const userId = Number(params[2]);
-    const apt = data.appointments.find(a => a.id === id && a.user_id === userId);
-    if (apt) {
-      apt.status = status;
-      await save();
-      return { rows: [apt] };
+    if (t.includes('SET STATUS =')) {
+      const status = params[0];
+      const id = Number(params[1]);
+      const userId = Number(params[2]);
+      const apt = data.appointments.find(a => a.id === id && a.user_id === userId);
+      if (apt) {
+        apt.status = status;
+        await save();
+        return { rows: [apt] };
+      }
+    } else if (t.includes('SET LAST_REMINDER_SENT =')) {
+      const id = Number(params[0]);
+      const apt = data.appointments.find(a => a.id === id);
+      if (apt) {
+        apt.last_reminder_sent = new Date().toISOString();
+        await save();
+        return { rows: [apt] };
+      }
     }
   }
 
@@ -226,6 +281,11 @@ export const query = async (text: string, params: any[] = []) => {
         data.users[userIndex].plan = plan;
         data.users[userIndex].appointment_limit = limit;
         data.users[userIndex].plan_expire_at = expireAt;
+      } else if (t.includes('SET NAME =') && t.includes('BUSINESS_SLUG =')) {
+        // Profile update: name, email, business_slug
+        data.users[userIndex].name = params[0];
+        data.users[userIndex].email = params[1];
+        data.users[userIndex].business_slug = params[2];
       } else if (t.includes('SET NAME =')) {
         // Profile update: name, email
         data.users[userIndex].name = params[0];
@@ -254,6 +314,40 @@ export const query = async (text: string, params: any[] = []) => {
     data.payments.push(newPayment);
     await save();
     return { rows: [newPayment] };
+  }
+
+  if (t.startsWith('INSERT INTO STAFF')) {
+    const nextId = (data.staff || []).length > 0 ? Math.max(...(data.staff || []).map(s => s.id)) + 1 : 1;
+    const newStaff: Staff = {
+      id: nextId,
+      user_id: params[0],
+      name: params[1],
+      role: params[2],
+      specialty: params[3] || null,
+      is_active: params[4] ?? true,
+      created_at: new Date().toISOString()
+    };
+    if (!data.staff) data.staff = [];
+    data.staff.push(newStaff);
+    await save();
+    return { rows: [newStaff] };
+  }
+
+  if (t.startsWith('INSERT INTO INVENTORY')) {
+    const nextId = (data.inventory || []).length > 0 ? Math.max(...(data.inventory || []).map(i => i.id)) + 1 : 1;
+    const newItem: InventoryItem = {
+      id: nextId,
+      user_id: params[0],
+      name: params[1],
+      quantity: params[2],
+      alert_threshold: params[3],
+      unit_price: params[4],
+      created_at: new Date().toISOString()
+    };
+    if (!data.inventory) data.inventory = [];
+    data.inventory.push(newItem);
+    await save();
+    return { rows: [newItem] };
   }
 
   if (t.startsWith('UPDATE PAYMENTS')) {
@@ -293,6 +387,56 @@ export const query = async (text: string, params: any[] = []) => {
         return { rows: [p] };
       }
     }
+  }
+
+  if (t.startsWith('UPDATE STAFF')) {
+    const id = Number(params[params.length - 2]);
+    const userId = Number(params[params.length - 1]);
+    const staffIndex = (data.staff || []).findIndex(s => s.id === id && s.user_id === userId);
+    if (staffIndex !== -1) {
+      data.staff![staffIndex] = {
+        ...data.staff![staffIndex],
+        name: params[0],
+        role: params[1],
+        specialty: params[2],
+        is_active: params[3]
+      };
+      await save();
+      return { rows: [data.staff![staffIndex]] };
+    }
+  }
+
+  if (t.startsWith('DELETE FROM STAFF')) {
+    const id = params[0];
+    const userId = params[1];
+    data.staff = (data.staff || []).filter(s => !(s.id === id && s.user_id === userId));
+    await save();
+    return { rows: [] };
+  }
+
+  if (t.startsWith('UPDATE INVENTORY')) {
+    const id = Number(params[params.length - 2]);
+    const userId = Number(params[params.length - 1]);
+    const itemIndex = (data.inventory || []).findIndex(i => i.id === id && i.user_id === userId);
+    if (itemIndex !== -1) {
+      data.inventory![itemIndex] = {
+        ...data.inventory![itemIndex],
+        name: params[0],
+        quantity: params[1],
+        alert_threshold: params[2],
+        unit_price: params[3]
+      };
+      await save();
+      return { rows: [data.inventory![itemIndex]] };
+    }
+  }
+
+  if (t.startsWith('DELETE FROM INVENTORY')) {
+    const id = params[0];
+    const userId = params[1];
+    data.inventory = (data.inventory || []).filter(i => !(i.id === id && i.user_id === userId));
+    await save();
+    return { rows: [] };
   }
 
   return { rows: [] };

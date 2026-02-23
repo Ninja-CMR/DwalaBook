@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useAuthStore } from '../stores/auth.store';
-import { Settings, Bell, Lock, Smartphone, MessageCircle, User, RefreshCw, LogOut } from 'lucide-vue-next';
+import { Settings, Bell, Lock, Smartphone, MessageCircle, User, RefreshCw, LogOut, Link } from 'lucide-vue-next';
 import AppLayout from '../components/AppLayout.vue';
 import api from '../api';
 
@@ -10,7 +10,8 @@ const isLoading = ref(false);
 
 const profileForm = reactive({
     name: authStore.user?.name || '',
-    email: authStore.user?.email || ''
+    email: authStore.user?.email || '',
+    business_slug: authStore.user?.business_slug || ''
 });
 
 const notifications = ref({
@@ -20,6 +21,12 @@ const notifications = ref({
 });
 
 const isPro = authStore.user?.plan === 'pro';
+
+const copyLink = () => {
+  const link = `${window.location.origin}/b/${authStore.user?.business_slug}`;
+  navigator.clipboard.writeText(link);
+  alert('Lien copié dans le presse-papier !');
+};
 
 const updateProfile = async () => {
     isLoading.value = true;
@@ -74,6 +81,33 @@ const updateProfile = async () => {
                         type="email" 
                         class="w-full px-5 py-4 bg-surface rounded-2xl border border-gray-100 font-bold focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
                       />
+                  </div>
+              </div>
+
+              <div v-if="isPro" class="space-y-4">
+                  <div class="space-y-2">
+                      <label class="text-xs font-black uppercase text-gray-400 tracking-wider flex items-center gap-2">
+                        Identifiant de réservation public (Slug)
+                        <span class="px-2 py-0.5 bg-[#8b5e3c]/10 text-[#8b5e3c] text-[10px] rounded">PRO</span>
+                      </label>
+                      <div class="relative items-center flex">
+                          <span class="absolute left-5 text-gray-400 font-bold border-r pr-3 border-gray-100">dwalabook.cm/b/</span>
+                          <input 
+                            v-model="profileForm.business_slug"
+                            type="text" 
+                            placeholder="mon-salon"
+                            class="w-full pl-[135px] pr-5 py-4 bg-surface rounded-2xl border border-gray-100 font-bold focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                          />
+                      </div>
+                      <p class="text-[10px] text-gray-400 font-medium">C'est le lien que vous partagerez à vos clients pour qu'ils réservent en ligne.</p>
+                  </div>
+                  
+                  <div v-if="authStore.user?.business_slug" class="p-4 bg-[#fcf9f4] rounded-2xl border border-[#8b5e3c]/10 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <Link class="w-5 h-5 text-[#8b5e3c]" />
+                      <span class="text-sm font-bold text-[#4a3728]">Lien public : dwalabook.cm/b/{{ authStore.user.business_slug }}</span>
+                    </div>
+                    <button @click.prevent="copyLink" class="text-xs font-black text-[#8b5e3c] uppercase hover:underline">Copier</button>
                   </div>
               </div>
               

@@ -1,11 +1,39 @@
 import cron from 'node-cron';
 import { checkExpiringSubscriptions, checkExpiredSubscriptions } from './modules/subscriptions/subscription.service';
 
+import { getAllScheduledAppointments, markReminderAsSent } from './modules/appointments/appointments.service';
+import { sendAppointmentReminder } from './modules/notifications/notifications.service';
+
 /**
  * Initialize all cron jobs
  */
 export const initCronJobs = () => {
-    console.log('[CRON] Initializing subscription management jobs...');
+    console.log('[CRON] Initializing jobs...');
+
+    // Appointment Reminders (Check every 30 minutes)
+    // Sends reminders for appointments in the next 24 hours
+    cron.schedule('*/30 * * * *', async () => {
+        console.log('[CRON] Checking scheduled appointments for reminders...');
+        try {
+            const appointments = await getAllScheduledAppointments();
+            const now = new Date();
+            const twentyFourHoursFromNow = new Date(now.getTime() + (24 * 60 * 60 * 1000));
+
+            for (const apt of appointments) {
+                const aptDate = new Date(apt.date);
+
+                // Only send if it's within the next 24 hours AND in the future
+                if (aptDate > now && aptDate <= twentyFourHoursFromNow) {
+                    const success = await sendAppointmentReminder(apt);
+                    if (success) {
+                        await markReminderAsSent(apt.id);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('[CRON] Error sending appointment reminders:', error);
+        }
+    });
 
     // Check for expiring subscriptions every 6 hours
     // Sends notifications 7 days before expiration

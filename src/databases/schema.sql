@@ -11,6 +11,31 @@ CREATE TABLE IF NOT EXISTS users (
     notification_preference TEXT DEFAULT 'email',
     whatsapp_number TEXT,
     last_notification_sent TIMESTAMP WITH TIME ZONE,
+    business_slug TEXT UNIQUE,
+    reset_token TEXT,
+    reset_token_expires TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Staff Table
+CREATE TABLE IF NOT EXISTS staff (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL,
+    specialty TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Inventory Table
+CREATE TABLE IF NOT EXISTS inventory (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    quantity INTEGER DEFAULT 0,
+    alert_threshold INTEGER DEFAULT 5,
+    unit_price NUMERIC DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -23,7 +48,10 @@ CREATE TABLE IF NOT EXISTS appointments (
     email TEXT,
     date TIMESTAMP WITH TIME ZONE NOT NULL,
     staff_name TEXT DEFAULT 'Équipe DwalaBook',
+    service TEXT,
+    notes TEXT,
     status TEXT NOT NULL DEFAULT 'scheduled',
+    last_reminder_sent TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

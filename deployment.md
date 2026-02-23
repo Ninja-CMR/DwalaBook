@@ -34,12 +34,12 @@ Ce guide détaille la procédure pour mettre votre application en ligne.
 3. **Variables d'Environnement** (Section "Environment") :
    Ajoutez les clés suivantes :
    ```env
-   JWT_SECRET=votre_cle_super_secrete_aleatoire
-   SMTP_HOST=smtp.gmail.com
-   SMTP_PORT=587
-   SMTP_USER=votre_email@gmail.com
-   SMTP_PASS=votre_mot_de_passe_application_google
-   CLIENT_URL=https://votre-projet-vercel.app (URL du frontend, à mettre à jour après le déploiement Vercel)
+   CLIENT_URL=https://votre-projet-vercel.app (URL du frontend)
+   
+   # WhatsApp Integration
+   WHATSAPP_PROVIDER=ultramsg (ou twilio)
+   ULTRAMSG_INSTANCE_ID=votre_instance
+   ULTRAMSG_TOKEN=votre_token
    ```
    > **Note sur la BDD** : Par défaut, l'application utilise `database.json`. Sur Render gratuit, ce fichier est réinitialisé régulièrement. Pour la production, ajoutez `DATABASE_URL` (voir section 4).
 

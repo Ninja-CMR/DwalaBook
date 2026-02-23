@@ -24,7 +24,7 @@ export const useAppointmentStore = defineStore('appointments', {
             if (this.appointments.length === 0) this.loading = true;
             try {
                 const response = await api.get('/appointments');
-                this.appointments = response.data;
+                this.appointments = [...response.data]; // Fresh reference
             } catch (error: any) {
                 this.error = error.message;
             } finally {

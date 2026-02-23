@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useAppointmentStore } from '../stores/appointments.store';
 import { useAuthStore } from '../stores/auth.store';
-import { Users, Search, Phone, Calendar, Clock, ChevronRight, User } from 'lucide-vue-next';
+import { Users, Search, Phone, Calendar, Clock, ChevronRight, User, Crown } from 'lucide-vue-next';
 import AppLayout from '../components/AppLayout.vue';
 
 const appointmentStore = useAppointmentStore();

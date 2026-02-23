@@ -2,20 +2,30 @@
 import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth.store';
 import { Mail, Lock, ArrowRight, CheckCircle2 } from 'lucide-vue-next';
+import { useForm, useField } from 'vee-validate';
+import * as yup from 'yup';
 
 const authStore = useAuthStore();
-const email = ref('');
-const password = ref('');
 const error = ref('');
 const isLoading = ref(false);
 
-const handleSubmit = async () => {
-  if (!email.value || !password.value) return;
-  
+const schema = yup.object({
+  email: yup.string().required('L\'email est requis').email('Format d\'email invalide'),
+  password: yup.string().required('Le mot de passe est requis').min(6, 'Minimum 6 caractères'),
+});
+
+const { handleSubmit, errors } = useForm({
+  validationSchema: schema,
+});
+
+const { value: email } = useField<string>('email');
+const { value: password } = useField<string>('password');
+
+const onSubmit = handleSubmit(async (values) => {
   isLoading.value = true;
   error.value = '';
   try {
-    await authStore.login({ email: email.value, password: password.value });
+    await authStore.login({ email: values.email, password: values.password });
   } catch (err: any) {
     if (err.response && err.response.data && err.response.data.message) {
       error.value = err.response.data.message;
@@ -25,7 +35,7 @@ const handleSubmit = async () => {
   } finally {
     isLoading.value = false;
   }
-};
+});
 </script>
 
 <template>
@@ -96,7 +106,7 @@ const handleSubmit = async () => {
           <p class="text-gray-500">Heureux de vous revoir sur DwalaBook.</p>
         </div>
 
-        <form @submit.prevent="handleSubmit" class="space-y-6">
+        <form @submit="onSubmit" class="space-y-6">
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Email Professionnel</label>
             <div class="relative group">
@@ -106,17 +116,22 @@ const handleSubmit = async () => {
               <input 
                 v-model="email" 
                 type="email" 
-                required 
                 placeholder="nom@entreprise.cm"
-                class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all sm:text-sm"
+                :class="[
+                  'block w-full pl-10 pr-3 py-3 border rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all sm:text-sm',
+                  errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary'
+                ]"
               />
             </div>
+            <span v-if="errors.email" class="text-[10px] text-red-500 mt-1 block font-bold uppercase tracking-widest pl-2 italic">
+               {{ errors.email }}
+            </span>
           </div>
 
           <div>
             <div class="flex justify-between items-center mb-2">
               <label class="block text-sm font-semibold text-gray-700">Mot de passe</label>
-              <a href="#" class="text-xs font-medium text-primary hover:underline">Oublié ?</a>
+              <a href="/forgot-password" class="text-xs font-medium text-primary hover:underline">Oublié ?</a>
             </div>
             <div class="relative group">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
@@ -125,11 +140,16 @@ const handleSubmit = async () => {
               <input 
                 v-model="password" 
                 type="password" 
-                required 
                 placeholder="••••••••"
-                class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all sm:text-sm"
+                :class="[
+                  'block w-full pl-10 pr-3 py-3 border rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all sm:text-sm',
+                  errors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary'
+                ]"
               />
             </div>
+            <span v-if="errors.password" class="text-[10px] text-red-500 mt-1 block font-bold uppercase tracking-widest pl-2 italic">
+               {{ errors.password }}
+            </span>
           </div>
 
           <div v-if="error" class="p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm font-medium flex items-center gap-2">

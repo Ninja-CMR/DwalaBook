@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { loginHandler, registerHandler, upgradeHandler, updateProfileHandler } from './auth.controller';
+import { loginHandler, registerHandler, upgradeHandler, updateProfileHandler, forgotPasswordHandler, resetPasswordHandler } from './auth.controller';
 
 export async function authRoutes(fastify: FastifyInstance) {
     fastify.post('/register', registerHandler);
@@ -10,4 +10,6 @@ export async function authRoutes(fastify: FastifyInstance) {
         // Return full user data from token or database
         return { user: req.user };
     });
+    fastify.post('/forgot-password', forgotPasswordHandler);
+    fastify.post('/reset-password', resetPasswordHandler);
 }

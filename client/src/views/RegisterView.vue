@@ -3,17 +3,30 @@ import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth.store';
 import { User, Mail, Lock, Sparkles, ArrowRight, ShieldCheck, CheckCircle2, Ticket } from 'lucide-vue-next';
+import { useForm, useField } from 'vee-validate';
+import * as yup from 'yup';
 
 const route = useRoute();
 const authStore = useAuthStore();
 const router = useRouter();
-const name = ref('');
-const email = ref('');
-const password = ref('');
 const error = ref('');
 const isLoading = ref(false);
 const isSuccess = ref(false);
 const plan = ref<string | null>(null);
+
+const schema = yup.object({
+  name: yup.string().required('Le nom est requis').min(3, 'Minimum 3 caractères'),
+  email: yup.string().required('L\'email est requis').email('Format d\'email invalide'),
+  password: yup.string().required('Le mot de passe est requis').min(8, 'Minimum 8 caractères'),
+});
+
+const { handleSubmit, errors } = useForm({
+  validationSchema: schema,
+});
+
+const { value: name } = useField<string>('name');
+const { value: email } = useField<string>('email');
+const { value: password } = useField<string>('password');
 
 onMounted(() => {
   if (route.query.plan) {
@@ -21,13 +34,15 @@ onMounted(() => {
   }
 });
 
-const handleSubmit = async () => {
-  if (!name.value || !email.value || !password.value) return;
-  
+const onSubmit = handleSubmit(async (values) => {
   isLoading.value = true;
   error.value = '';
   try {
-    await authStore.register({ name: name.value, email: email.value, password: password.value });
+    await authStore.register({ 
+      name: values.name, 
+      email: values.email, 
+      password: values.password 
+    });
     isSuccess.value = true;
     
     // Snappy transition
@@ -46,7 +61,7 @@ const handleSubmit = async () => {
     }
     isLoading.value = false;
   }
-};
+});
 </script>
 
 <template>
@@ -118,7 +133,7 @@ const handleSubmit = async () => {
           <p class="text-gray-500 font-medium">Rejoignez DwalaBook pour booster votre activité.</p>
         </div>
 
-        <form @submit.prevent="handleSubmit" class="space-y-6" autocomplete="off">
+        <form @submit="onSubmit" class="space-y-6" autocomplete="off">
           <div class="space-y-2">
             <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Nom / Entreprise</label>
             <div class="relative group">
@@ -128,12 +143,17 @@ const handleSubmit = async () => {
               <input 
                 v-model="name" 
                 type="text" 
-                required 
                 autocomplete="off"
                 placeholder="Ex: Salon de Coiffure Akwa"
-                class="block w-full pl-12 pr-4 py-4 border-2 border-gray-50 rounded-2xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-bold"
+                :class="[
+                  'block w-full pl-12 pr-4 py-4 border-2 rounded-2xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all font-bold',
+                  errors.name ? 'border-red-500/50 focus:border-red-500' : 'border-gray-50 focus:border-primary'
+                ]"
               />
             </div>
+            <span v-if="errors.name" class="text-[10px] text-red-500 mt-1 block font-black uppercase tracking-widest pl-2 italic">
+               {{ errors.name }}
+            </span>
           </div>
 
           <div class="space-y-2">
@@ -145,12 +165,17 @@ const handleSubmit = async () => {
               <input 
                 v-model="email" 
                 type="email" 
-                required 
                 autocomplete="off"
                 placeholder="contact@entreprise.cm"
-                class="block w-full pl-12 pr-4 py-4 border-2 border-gray-50 rounded-2xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-bold"
+                :class="[
+                  'block w-full pl-12 pr-4 py-4 border-2 rounded-2xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all font-bold',
+                  errors.email ? 'border-red-500/50 focus:border-red-500' : 'border-gray-50 focus:border-primary'
+                ]"
               />
             </div>
+            <span v-if="errors.email" class="text-[10px] text-red-500 mt-1 block font-black uppercase tracking-widest pl-2 italic">
+               {{ errors.email }}
+            </span>
           </div>
 
           <div class="space-y-2">
@@ -162,12 +187,17 @@ const handleSubmit = async () => {
               <input 
                 v-model="password" 
                 type="password" 
-                required 
                 autocomplete="new-password"
                 placeholder="Minimum 8 caractères"
-                class="block w-full pl-12 pr-4 py-4 border-2 border-gray-50 rounded-2xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-bold"
+                :class="[
+                  'block w-full pl-12 pr-4 py-4 border-2 rounded-2xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all font-bold',
+                  errors.password ? 'border-red-500/50 focus:border-red-500' : 'border-gray-50 focus:border-primary'
+                ]"
               />
             </div>
+            <span v-if="errors.password" class="text-[10px] text-red-500 mt-1 block font-black uppercase tracking-widest pl-2 italic">
+               {{ errors.password }}
+            </span>
           </div>
 
           <div v-if="error" class="p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-sm font-black flex items-center gap-3">

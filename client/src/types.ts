@@ -6,6 +6,7 @@ export interface User {
     plan: 'free' | 'starter' | 'pro';
     appointment_limit: number;
     plan_expire_at?: string | null;
+    business_slug?: string;
 }
 
 export interface Appointment {

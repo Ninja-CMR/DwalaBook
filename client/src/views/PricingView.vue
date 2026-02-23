@@ -201,21 +201,24 @@ const handleManualUpgrade = () => {
               <p class="text-[10px] font-black text-[#8b5e3c] uppercase tracking-[0.2em] text-center mb-4">Mode de paiement</p>
               
               <!-- Stripe Button -->
-              <button 
-                @click="handleStripeUpgrade"
-                :disabled="isProcessing === 'stripe'"
-                class="w-full flex items-center gap-3 px-4 py-4 bg-primary text-white rounded-2xl font-bold text-sm shadow-lg hover:bg-[#4a3728] transition-all group active:scale-95"
-              >
-                <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Globe class="w-5 h-5 text-[#DDB892]" />
+              <div class="relative group">
+                <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-yellow-400 text-black text-[8px] font-black uppercase rounded-full z-20 group-hover:scale-110 transition-transform">
+                  Bientôt disponible
                 </div>
-                <div class="flex-1 text-left">
-                  <span>Carte Bancaire</span>
-                  <p class="text-[10px] opacity-70 font-medium">Stripe (International)</p>
-                </div>
-                <Loader2 v-if="isProcessing === 'stripe'" class="w-4 h-4 animate-spin" />
-                <CreditCard v-else class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
+                <button 
+                  disabled
+                  class="w-full flex items-center gap-3 px-4 py-4 bg-gray-100 text-gray-400 rounded-2xl font-bold text-sm shadow-sm cursor-not-allowed grayscale"
+                >
+                  <div class="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center">
+                    <Globe class="w-5 h-5 text-gray-300" />
+                  </div>
+                  <div class="flex-1 text-left">
+                    <span>Carte Bancaire</span>
+                    <p class="text-[10px] opacity-70 font-medium">Stripe (International)</p>
+                  </div>
+                  <CreditCard class="w-4 h-4 opacity-50" />
+                </button>
+              </div>
 
               <!-- Local Payment Button -->
               <button 

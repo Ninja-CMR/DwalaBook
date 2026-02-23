@@ -17,8 +17,21 @@ const router = createRouter({
             meta: { guest: true },
         },
         {
+            path: '/forgot-password',
+            name: 'forgot-password',
+            component: () => import('../views/ForgotPasswordView.vue'),
+            meta: { guest: true },
+        },
+        {
+            path: '/reset-password',
+            name: 'reset-password',
+            component: () => import('../views/ResetPasswordView.vue'),
+            meta: { guest: true },
+        },
+        {
             path: '/',
-            redirect: '/dashboard',
+            name: 'home',
+            component: () => import('../views/HomeView.vue'),
         },
         {
             path: '/dashboard',
@@ -61,11 +74,43 @@ const router = createRouter({
             meta: { requiresAuth: true },
         },
         {
+            path: '/staff',
+            name: 'staff',
+            component: () => import('../views/StaffView.vue'),
+            meta: { requiresAuth: true },
+        },
+        {
+            path: '/inventory',
+            name: 'inventory',
+            component: () => import('../views/InventoryView.vue'),
+            meta: { requiresAuth: true },
+        },
+        {
             path: '/admin',
             name: 'admin',
             component: () => import('../views/AdminView.vue'),
             // For now, any auth user can access (in real app, check role)
             meta: { requiresAuth: true },
+        },
+        {
+            path: '/b/:slug',
+            name: 'public-booking',
+            component: () => import('../views/PublicBookingView.vue'),
+        },
+        {
+            path: '/legal',
+            name: 'legal',
+            component: () => import('../views/LegalView.vue'),
+        },
+        {
+            path: '/privacy',
+            name: 'privacy',
+            component: () => import('../views/LegalView.vue'),
+        },
+        {
+            path: '/terms',
+            name: 'terms',
+            component: () => import('../views/LegalView.vue'),
         },
     ],
 });

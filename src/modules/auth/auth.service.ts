@@ -6,6 +6,11 @@ export const findUserById = async (id: number) => {
     return res.rows[0];
 };
 
+export const findUserBySlug = async (slug: string) => {
+    const res = await query('SELECT id, name, email, plan, business_slug FROM users WHERE business_slug = $1', [slug]);
+    return res.rows[0];
+};
+
 export const findUserByEmail = async (email: string) => {
     const res = await query('SELECT * FROM users WHERE email = $1', [email]);
     return res.rows[0];
@@ -28,8 +33,8 @@ export const upgradeUserToPlan = async (id: number, plan: 'starter' | 'pro') => 
     return res.rows[0];
 };
 
-export const updateProfile = async (id: number, name: string, email: string) => {
-    const res = await query('UPDATE users SET name = $1, email = $2 WHERE id = $3 RETURNING *', [name, email, id]);
+export const updateProfile = async (id: number, name: string, email: string, business_slug?: string) => {
+    const res = await query('UPDATE users SET name = $1, email = $2, business_slug = $3 WHERE id = $4 RETURNING *', [name, email, business_slug || null, id]);
     return res.rows[0];
 };
 
@@ -51,4 +56,32 @@ export const checkAndResetExpiredPlan = async (user: any) => {
 
 export const verifyPassword = async (password: string, hash: string) => {
     return await bcrypt.compare(password, hash);
+};
+
+export const generateResetToken = async (email: string) => {
+    const user = await findUserByEmail(email);
+    if (!user) return null;
+
+    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const expires = new Date();
+    expires.setHours(expires.getHours() + 1); // 1 hour expiry
+
+    await query('UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3', [token, expires.toISOString(), user.id]);
+    return token;
+};
+
+export const findUserByResetToken = async (token: string) => {
+    const res = await query('SELECT * FROM users WHERE reset_token = $1', [token]);
+    const user = res.rows[0];
+    if (!user) return null;
+
+    if (new Date(user.reset_token_expires) < new Date()) {
+        return null;
+    }
+    return user;
+};
+
+export const updatePassword = async (userId: number, newPassword: string) => {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await query('UPDATE users SET password = $1, reset_token = null, reset_token_expires = null WHERE id = $2', [hashedPassword, userId]);
 };

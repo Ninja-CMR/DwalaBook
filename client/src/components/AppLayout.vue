@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth.store';
-import { Menu, X, LayoutDashboard, Calendar, CreditCard, LogOut, ChevronRight, Settings, CalendarDays, Users } from 'lucide-vue-next';
+import { Menu, X, LayoutDashboard, Calendar, CreditCard, LogOut, ChevronRight, Settings, CalendarDays, Users, Package } from 'lucide-vue-next';
 import ToastContainer from './ToastContainer.vue';
 
 const authStore = useAuthStore();
@@ -30,7 +30,7 @@ const logout = () => {
         </div>
       </div>
 
-      <nav class="flex-1 px-4 space-y-2">
+      <nav class="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar">
         <router-link to="/dashboard" class="group flex items-center gap-3 py-4 px-5 rounded-2xl transition-all duration-300 hover:bg-white/10" active-class="bg-[#8b5e3c] shadow-lg shadow-[#8b5e3c]/40">
           <LayoutDashboard class="w-5 h-5 opacity-70 group-hover:opacity-100" />
           <span class="font-bold">Tableau de bord</span>
@@ -49,6 +49,20 @@ const logout = () => {
         <router-link to="/clients" class="group flex items-center gap-3 py-4 px-5 rounded-2xl transition-all duration-300 hover:bg-white/10" active-class="bg-[#8b5e3c] shadow-lg shadow-[#8b5e3c]/40">
           <Users class="w-5 h-5 opacity-70 group-hover:opacity-100" />
           <span class="font-bold">Clients</span>
+        </router-link>
+
+        <div v-if="authStore.user?.plan === 'pro'" class="pt-4 pb-2 px-5">
+           <span class="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Outils PRO</span>
+        </div>
+
+        <router-link v-if="authStore.user?.plan === 'pro'" to="/staff" class="group flex items-center gap-3 py-4 px-5 rounded-2xl transition-all duration-300 hover:bg-white/10" active-class="bg-[#8b5e3c] shadow-lg shadow-[#8b5e3c]/40">
+          <Users class="w-5 h-5 opacity-70 group-hover:opacity-100" />
+          <span class="font-bold">Équipe</span>
+        </router-link>
+
+        <router-link v-if="authStore.user?.plan === 'pro'" to="/inventory" class="group flex items-center gap-3 py-4 px-5 rounded-2xl transition-all duration-300 hover:bg-white/10" active-class="bg-[#8b5e3c] shadow-lg shadow-[#8b5e3c]/40">
+          <Package class="w-5 h-5 opacity-70 group-hover:opacity-100" />
+          <span class="font-bold">Stock</span>
         </router-link>
 
         <router-link to="/pricing" class="group flex items-center gap-3 py-4 px-5 rounded-2xl transition-all duration-300 hover:bg-white/10" active-class="bg-[#8b5e3c] shadow-lg shadow-[#8b5e3c]/40">
@@ -96,8 +110,6 @@ const logout = () => {
           <X v-else class="w-6 h-6" />
         </button>
       </header>
-
-      <!-- Mobile Menu Overlay -->
       <transition 
         enter-active-class="transition duration-300 ease-out"
         enter-from-class="opacity-0 translate-x-full"
@@ -133,10 +145,54 @@ const logout = () => {
                 <ChevronRight class="w-4 h-4 opacity-50" />
               </router-link>
 
+              <router-link to="/calendar" @click="isMenuOpen = false" class="flex items-center justify-between py-4 px-6 bg-white/5 rounded-2xl active:bg-[#8b5e3c]">
+                <div class="flex items-center gap-4">
+                  <CalendarDays class="w-5 h-5 opacity-70" />
+                  <span class="font-black">Agenda</span>
+                </div>
+                <ChevronRight class="w-4 h-4 opacity-50" />
+              </router-link>
+              
+              <router-link to="/clients" @click="isMenuOpen = false" class="flex items-center justify-between py-4 px-6 bg-white/5 rounded-2xl active:bg-[#8b5e3c]">
+                <div class="flex items-center gap-4">
+                  <Users class="w-5 h-5 opacity-70" />
+                  <span class="font-black">Clients</span>
+                </div>
+                <ChevronRight class="w-4 h-4 opacity-50" />
+              </router-link>
+
               <router-link to="/pricing" @click="isMenuOpen = false" class="flex items-center justify-between py-4 px-6 bg-white/5 rounded-2xl active:bg-[#8b5e3c]">
                 <div class="flex items-center gap-4">
                   <CreditCard class="w-5 h-5 opacity-70" />
                   <span class="font-black">Tarifs</span>
+                </div>
+                <ChevronRight class="w-4 h-4 opacity-50" />
+              </router-link>
+
+              <router-link to="/settings" @click="isMenuOpen = false" class="flex items-center justify-between py-4 px-6 bg-white/5 rounded-2xl active:bg-[#8b5e3c]">
+                <div class="flex items-center gap-4">
+                  <Settings class="w-5 h-5 opacity-70" />
+                  <span class="font-black">Paramètres</span>
+                </div>
+                <ChevronRight class="w-4 h-4 opacity-50" />
+              </router-link>
+
+              <div v-if="authStore.user?.plan === 'pro'" class="pt-4 pb-2 px-6">
+                 <span class="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Outils PRO</span>
+              </div>
+
+              <router-link v-if="authStore.user?.plan === 'pro'" to="/staff" @click="isMenuOpen = false" class="flex items-center justify-between py-4 px-6 bg-white/5 rounded-2xl active:bg-[#8b5e3c]">
+                <div class="flex items-center gap-4">
+                  <Users class="w-5 h-5 opacity-70" />
+                  <span class="font-black">Équipe</span>
+                </div>
+                <ChevronRight class="w-4 h-4 opacity-50" />
+              </router-link>
+
+              <router-link v-if="authStore.user?.plan === 'pro'" to="/inventory" @click="isMenuOpen = false" class="flex items-center justify-between py-4 px-6 bg-white/5 rounded-2xl active:bg-[#8b5e3c]">
+                <div class="flex items-center gap-4">
+                  <Package class="w-5 h-5 opacity-70" />
+                  <span class="font-black">Stock</span>
                 </div>
                 <ChevronRight class="w-4 h-4 opacity-50" />
               </router-link>

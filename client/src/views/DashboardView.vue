@@ -1,91 +1,42 @@
 <script setup lang="ts">
 import AppLayout from '../components/AppLayout.vue';
-import { onMounted, computed } from 'vue';
-import { useAppointmentStore } from '../stores/appointments.store';
-import { useAuthStore } from '../stores/auth.store';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import type { Appointment } from '../types';
+import { useDashboard } from '../composables/useDashboard';
 import { 
   Plus, 
   Calendar, 
   Clock, 
   ArrowRight, 
   Sparkles,
-  Search,
   LayoutDashboard,
   Crown,
   Zap,
-  TrendingUp,
-  BarChart3,
-  UserCheck
+  Search
 } from 'lucide-vue-next';
 
-const appointmentStore = useAppointmentStore();
-const authStore = useAuthStore();
+const {
+  appointmentStore,
+  authStore,
+  staffMembers,
+  recentActivities,
+  pendingAppointmentsCount,
+  todayAppointmentsCount,
+  tomorrowAppointmentsCount,
+  isEmpty,
+  usagePercentage,
+  isLimitReached,
+  currentLimit
+} = useDashboard();
+
 const router = useRouter();
 
-onMounted(() => {
-  appointmentStore.fetchAppointments();
-});
-
-const pendingAppointmentsCount = computed(() => {
-  return appointmentStore.appointments.filter((a: Appointment) => a.status === 'scheduled').length;
-});
-
-const todayAppointmentsCount = computed(() => {
-  const today = new Date().toDateString();
-  return appointmentStore.appointments.filter((a: Appointment) => new Date(a.date).toDateString() === today).length;
-});
-
-const weekAppointmentsCount = computed(() => {
-  const now = new Date();
-  const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-  startOfWeek.setHours(0,0,0,0);
-  return appointmentStore.appointments.filter((a: Appointment) => new Date(a.date) >= startOfWeek).length;
-});
-
-// Premium Stats
-const attendanceRate = computed(() => {
-  const total = appointmentStore.appointments.filter(a => ['completed', 'cancelled', 'noshow'].includes(a.status)).length;
-  if (total === 0) return 0;
-  const completed = appointmentStore.appointments.filter(a => a.status === 'completed').length;
-  return Math.round((completed / total) * 100);
-});
-
-const cancellationRate = computed(() => {
-  const total = appointmentStore.appointments.length;
-  if (total === 0) return 0;
-  const cancelled = appointmentStore.appointments.filter(a => a.status === 'cancelled').length;
-  return Math.round((cancelled / total) * 100);
-});
-
-const peakHours = computed(() => {
-  const hourMap = new Map<string, number>();
-  appointmentStore.appointments.forEach(a => {
-      const h = new Date(a.date).getHours() + 'h';
-      hourMap.set(h, (hourMap.get(h) || 0) + 1);
-  });
-  return Array.from(hourMap.entries()).sort((a,b) => b[1] - a[1]).slice(0, 3);
-});
-
-const topClients = computed(() => {
-   const clientMap = new Map<string, number>();
-   appointmentStore.appointments.forEach(a => {
-       clientMap.set(a.customer_name, (clientMap.get(a.customer_name) || 0) + 1);
-   });
-   return Array.from(clientMap.entries()).sort((a,b) => b[1] - a[1]).slice(0, 3);
-});
-
+// Basic stats for the UI
 const stats = computed(() => [
   { label: "Aujourd'hui", value: todayAppointmentsCount.value, icon: Calendar, color: 'text-primary', bg: 'bg-primary/10' },
-  { label: 'Cette Semaine', value: weekAppointmentsCount.value, icon: LayoutDashboard, color: 'text-secondary-dark', bg: 'bg-secondary/20' },
-  { label: 'En attente', value: pendingAppointmentsCount.value, icon: Clock, color: 'text-accent', bg: 'bg-accent/10' },
+  { label: 'Demain', value: tomorrowAppointmentsCount.value, icon: Clock, color: 'text-secondary-dark', bg: 'bg-secondary/20' },
+  { label: 'En attente', value: pendingAppointmentsCount.value, icon: Zap, color: 'text-accent', bg: 'bg-accent/10' },
 ]);
-
-const isEmpty = computed(() => appointmentStore.appointments.length === 0 && !appointmentStore.loading);
-const usagePercentage = computed(() => Math.min((appointmentStore.appointments.length / (authStore.user?.appointment_limit || 5)) * 100, 100));
-const isLimitReached = computed(() => authStore.isFree && appointmentStore.appointments.length >= 5);
-const currentLimit = computed(() => authStore.user?.appointment_limit || 5);
 
 </script>
 
@@ -170,80 +121,7 @@ const currentLimit = computed(() => authStore.user?.appointment_limit || 5);
         </div>
       </div>
       
-      <!-- Premium Insights (Pro Only) -->
-      <div class="space-y-6">
-         <div class="flex items-center justify-between px-2">
-            <h2 class="text-2xl font-black text-gray-900 flex items-center gap-3">
-              <BarChart3 class="w-6 h-6 text-primary" />
-              Performances
-              <span v-if="authStore.isFree" class="px-2 py-0.5 bg-gray-200 text-gray-500 text-[10px] uppercase font-black rounded-md flex items-center gap-1"><Crown class="w-3 h-3" /> PRO</span>
-            </h2>
-         </div>
-
-         <div v-if="!authStore.isFree" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" v-motion-slide-visible-once-bottom>
-             <!-- Attendance Rate -->
-             <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
-                <p class="text-xs font-black uppercase tracking-widest text-gray-400">Taux de présence</p>
-                <div class="flex items-end gap-2">
-                    <span class="text-4xl font-black text-green-600">{{ attendanceRate }}%</span>
-                    <TrendingUp class="w-6 h-6 text-green-500 mb-1" />
-                </div>
-                <div class="w-full bg-gray-100 rounded-full h-2">
-                    <div class="bg-green-500 h-2 rounded-full" :style="{ width: `${attendanceRate}%` }"></div>
-                </div>
-             </div>
-             
-              <!-- Cancellation Rate -->
-             <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
-                <p class="text-xs font-black uppercase tracking-widest text-gray-400">Annulations</p>
-                 <div class="flex items-end gap-2">
-                    <span class="text-4xl font-black text-red-500">{{ cancellationRate }}%</span>
-                </div>
-                <div class="w-full bg-gray-100 rounded-full h-2">
-                    <div class="bg-red-500 h-2 rounded-full" :style="{ width: `${cancellationRate}%` }"></div>
-                </div>
-             </div>
-
-             <!-- Peak Hours -->
-             <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
-                <p class="text-xs font-black uppercase tracking-widest text-gray-400">Heures de pointe</p>
-                <div class="space-y-2">
-                    <div v-for="item in peakHours" :key="item[0]" class="flex items-center justify-between text-sm font-bold">
-                        <span class="flex items-center gap-2"><Clock class="w-3 h-3 text-primary" /> {{ item[0] }}</span>
-                        <span class="bg-gray-100 px-2 rounded-md text-xs">{{ item[1] }} RDV</span>
-                    </div>
-                    <p v-if="peakHours.length === 0" class="text-xs text-gray-400 italic">Pas assez de données</p>
-                </div>
-             </div>
-
-             <!-- Top Clients -->
-             <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
-                <p class="text-xs font-black uppercase tracking-widest text-gray-400">Top Clients</p>
-                 <div class="space-y-2">
-                    <div v-for="item in topClients" :key="item[0]" class="flex items-center justify-between text-sm font-bold">
-                        <span class="flex items-center gap-2 truncate max-w-[120px]"><UserCheck class="w-3 h-3 text-secondary-dark" /> {{ item[0] }}</span>
-                        <span class="text-primary">{{ item[1] }}x</span>
-                    </div>
-                     <p v-if="topClients.length === 0" class="text-xs text-gray-400 italic">Pas assez de données</p>
-                </div>
-             </div>
-         </div>
-
-         <!-- Locked State -->
-         <div v-else class="relative p-12 bg-gray-50 rounded-[3rem] border border-gray-200 border-dashed text-center overflow-hidden">
-            <div class="relative z-10 max-w-md mx-auto space-y-4">
-                <Crown class="w-12 h-12 text-yellow-500 mx-auto" />
-                <h3 class="text-xl font-black text-gray-800">Débloquez les Statistiques Avancées</h3>
-                <p class="text-gray-500 font-medium pb-4">Obtenez une vision claire de votre business : taux de présence, meilleures heures, clients fidèles et plus.</p>
-                <button @click="router.push('/pricing')" class="px-8 py-3 bg-[#4a3728] text-white font-black rounded-xl hover:bg-[#8b5e3c] transition-colors shadow-lg">
-                    Passer au plan PRO
-                </button>
-            </div>
-            <div class="absolute inset-0 bg-white/50 backdrop-blur-[1px]"></div>
-         </div>
-      </div>
-
-      <!-- Main Content Area -->
+      <!-- Recent Activities and Sidebar -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 pb-20">
         
         <!-- Appointments List -->
@@ -281,7 +159,7 @@ const currentLimit = computed(() => authStore.user?.appointment_limit || 5);
                 <div class="inline-block w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
              </div>
              <div v-else class="divide-y divide-gray-50">
-                <div v-for="apt in appointmentStore.appointments.slice(0, 6)" :key="apt.id" class="p-8 flex items-center justify-between hover:bg-primary/[0.02] transition-colors group">
+                <div v-for="apt in recentActivities" :key="apt.id" class="p-8 flex items-center justify-between hover:bg-primary/[0.02] transition-colors group">
                   <div class="flex items-center gap-5">
                     <div class="w-14 h-14 rounded-2xl bg-secondary/20 flex items-center justify-center text-primary font-black text-2xl border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
                       {{ apt.customer_name.charAt(0) }}
@@ -326,16 +204,22 @@ const currentLimit = computed(() => authStore.user?.appointment_limit || 5);
 
            <!-- Multi-staff Widget (Pro Only) -->
            <div v-if="!authStore.isFree" class="bg-white p-8 rounded-[3rem] shadow-xl shadow-gray-100 border border-gray-100 space-y-6 border-b-8 border-b-secondary">
-               <h4 class="font-black text-gray-900 uppercase tracking-widest text-xs opacity-60">Équipe Actuelle</h4>
+               <h4 class="font-black text-gray-900 uppercase tracking-widest text-xs opacity-60">Mon Équipe</h4>
                <div class="space-y-4">
-                   <div class="flex -space-x-3 overflow-hidden">
-                       <div v-for="i in 3" :key="i" class="inline-block h-10 w-10 rounded-full ring-4 ring-white bg-primary/10 flex items-center justify-center font-black text-primary text-xs italic">
-                           JD
+                   <div v-if="staffMembers.length > 0" class="flex -space-x-3 overflow-hidden">
+                       <div v-for="member in staffMembers.slice(0, 4)" :key="member.id" class="inline-block h-10 w-10 rounded-full ring-4 ring-white bg-primary/10 flex items-center justify-center font-black text-primary text-xs uppercase border border-primary/20">
+                           {{ member.name.charAt(0) }}
                        </div>
-                       <div class="flex items-center justify-center h-10 w-10 rounded-full ring-4 ring-white bg-gray-100 font-black text-gray-400 text-xs">+</div>
+                       <div v-if="staffMembers.length > 4" class="flex items-center justify-center h-10 w-10 rounded-full ring-4 ring-white bg-gray-100 font-black text-gray-400 text-xs text-[10px]">
+                         +{{ staffMembers.length - 4 }}
+                       </div>
                    </div>
-                   <p class="text-xs text-gray-500 font-bold">3 employés configurés. Planification équilibrée.</p>
-                   <button @click="router.push('/calendar')" class="text-xs font-black text-primary flex items-center gap-1">Gérer l'équipe <ArrowRight class="w-3 h-3" /></button>
+                   <p class="text-xs text-gray-500 font-bold">
+                     {{ staffMembers.length > 0 ? `${staffMembers.length} collaborateur(s) actif(s).` : 'Aucun collaborateur configuré.' }}
+                   </p>
+                   <button @click="router.push('/staff')" class="text-xs font-black text-primary flex items-center gap-1 hover:underline">
+                     {{ staffMembers.length > 0 ? 'Gérer l\'équipe' : 'Ajouter un membre' }} <ArrowRight class="w-3 h-3" />
+                   </button>
                </div>
            </div>
 
@@ -367,32 +251,6 @@ const currentLimit = computed(() => authStore.user?.appointment_limit || 5);
               </div>
            </div>
 
-           <!-- Multi-staff Widget (Pro Only) -->
-           <div v-if="authStore.isPro" class="bg-primary-dark p-8 rounded-[3rem] text-white space-y-6 shadow-xl relative overflow-hidden border border-white/10" v-motion-fade>
-               <div class="relative z-10">
-                  <h4 class="text-xs font-black uppercase tracking-[0.2em] text-secondary-light mb-4">Estimation Chiffre d'Affaires</h4>
-                  <div class="flex items-center gap-4">
-                      <div class="p-3 bg-white/10 rounded-2xl">
-                          <TrendingUp class="w-8 h-8 text-secondary" />
-                      </div>
-                      <div>
-                          <p class="text-3xl font-black">~{{ (todayAppointmentsCount * 5000).toLocaleString() }} F</p>
-                          <p class="text-[10px] text-primary-light uppercase font-bold">Projection aujourd'hui</p>
-                      </div>
-                  </div>
-                  <div class="mt-8 space-y-3">
-                      <div class="flex justify-between text-xs font-bold">
-                          <span>Objectif Hebdo</span>
-                          <span>{{ Math.round((weekAppointmentsCount / 20) * 100) }}%</span>
-                      </div>
-                      <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                          <div class="h-full bg-secondary transition-all duration-1000" :style="{ width: `${Math.min((weekAppointmentsCount / 20) * 100, 100)}%` }"></div>
-                      </div>
-                  </div>
-               </div>
-               <!-- Decor -->
-               <div class="absolute top-0 right-0 w-32 h-32 bg-secondary opacity-5 rounded-full translate-x-1/2 -translate-y-1/2"></div>
-           </div>
         </div>
       </div>
     </div>

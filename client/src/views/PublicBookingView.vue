@@ -1,13 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import axios from 'axios';
+import api from '../api';
 import { Calendar, Clock, User, Phone, Mail, FileText, CheckCircle2, Loader2, AlertCircle } from 'lucide-vue-next';
-
-// Use basic axios here as this is a public page (no auth token)
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
-});
 
 const route = useRoute();
 const slug = route.params.slug as string;

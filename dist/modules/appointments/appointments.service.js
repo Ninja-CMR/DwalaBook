@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllScheduledAppointments = exports.getCurrentMonthAppointmentCount = exports.updateAppointmentStatus = exports.getAppointments = exports.createAppointment = void 0;
+exports.markReminderAsSent = exports.getAllScheduledAppointments = exports.getCurrentMonthAppointmentCount = exports.updateAppointmentStatus = exports.getAppointments = exports.createAppointment = void 0;
 const databases_1 = require("../../databases");
 const createAppointment = async (userId, data) => {
-    const res = await (0, databases_1.query)('INSERT INTO appointments (user_id, customer_name, phone, email, date, staff_name) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *', [userId, data.customer_name, data.phone, data.email, data.date, data.staff_name || 'Équipe DwalaBook']);
+    const res = await (0, databases_1.query)('INSERT INTO appointments (user_id, customer_name, phone, email, date, staff_name, service, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *', [userId, data.customer_name, data.phone, data.email, data.date, data.staff_name || 'Équipe DwalaBook', data.service || null, data.notes || null]);
     return res.rows[0];
 };
 exports.createAppointment = createAppointment;
@@ -26,10 +26,6 @@ const getCurrentMonthAppointmentCount = async (userId) => {
         const d = new Date(a.date);
         return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
     }).length;
-    return appointments.filter(a => {
-        const d = new Date(a.date);
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-    }).length;
 };
 exports.getCurrentMonthAppointmentCount = getCurrentMonthAppointmentCount;
 const getAllScheduledAppointments = async () => {
@@ -38,8 +34,12 @@ const getAllScheduledAppointments = async () => {
     const res = await (0, databases_1.query)(`SELECT a.*, u.plan 
          FROM appointments a 
          JOIN users u ON a.user_id = u.id 
-         WHERE a.status = 'scheduled' 
+         WHERE a.status = 'scheduled' AND a.last_reminder_sent IS NULL 
          LIMIT 100`, []);
     return res.rows;
 };
 exports.getAllScheduledAppointments = getAllScheduledAppointments;
+const markReminderAsSent = async (id) => {
+    await (0, databases_1.query)('UPDATE appointments SET last_reminder_sent = NOW() WHERE id = $1', [id]);
+};
+exports.markReminderAsSent = markReminderAsSent;

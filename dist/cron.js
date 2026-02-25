@@ -6,11 +6,36 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.initCronJobs = void 0;
 const node_cron_1 = __importDefault(require("node-cron"));
 const subscription_service_1 = require("./modules/subscriptions/subscription.service");
+const appointments_service_1 = require("./modules/appointments/appointments.service");
+const notifications_service_1 = require("./modules/notifications/notifications.service");
 /**
  * Initialize all cron jobs
  */
 const initCronJobs = () => {
-    console.log('[CRON] Initializing subscription management jobs...');
+    console.log('[CRON] Initializing jobs...');
+    // Appointment Reminders (Check every 30 minutes)
+    // Sends reminders for appointments in the next 24 hours
+    node_cron_1.default.schedule('*/30 * * * *', async () => {
+        console.log('[CRON] Checking scheduled appointments for reminders...');
+        try {
+            const appointments = await (0, appointments_service_1.getAllScheduledAppointments)();
+            const now = new Date();
+            const twentyFourHoursFromNow = new Date(now.getTime() + (24 * 60 * 60 * 1000));
+            for (const apt of appointments) {
+                const aptDate = new Date(apt.date);
+                // Only send if it's within the next 24 hours AND in the future
+                if (aptDate > now && aptDate <= twentyFourHoursFromNow) {
+                    const success = await (0, notifications_service_1.sendAppointmentReminder)(apt);
+                    if (success) {
+                        await (0, appointments_service_1.markReminderAsSent)(apt.id);
+                    }
+                }
+            }
+        }
+        catch (error) {
+            console.error('[CRON] Error sending appointment reminders:', error);
+        }
+    });
     // Check for expiring subscriptions every 6 hours
     // Sends notifications 7 days before expiration
     node_cron_1.default.schedule('0 */6 * * *', async () => {

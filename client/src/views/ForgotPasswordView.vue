@@ -14,7 +14,7 @@ const handleSubmit = async () => {
   isLoading.value = true;
   error.value = '';
   try {
-    const response = await api.post('/auth/forgot-password', { email: email.value });
+    await api.post('/auth/forgot-password', { email: email.value });
     isSent.value = true;
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Une erreur est survenue.';

@@ -2,8 +2,8 @@
 import { ref, onMounted } from 'vue';
 import { useAuthStore } from '../stores/auth.store';
 import { useRouter, useRoute } from 'vue-router';
-import api from '../api';
-import { Check, X, Loader2, AlertCircle, Globe, CreditCard, Smartphone } from 'lucide-vue-next';
+
+import { Check, X, AlertCircle, Globe, CreditCard, Smartphone } from 'lucide-vue-next';
 import ManualPaymentModal from '../components/ManualPaymentModal.vue';
 
 const route = useRoute();
@@ -94,26 +94,7 @@ const showPaymentOptions = (id: 'starter' | 'pro', amount: number) => {
   selectedPlan.value = { id, amount };
 };
 
-const handleStripeUpgrade = async () => {
-  if (!selectedPlan.value) return;
 
-  try {
-    isProcessing.value = 'stripe';
-    isProcessing.value = 'stripe';
-    error.value = null;
-    
-    const response = await api.post('/payments/stripe/create-session', { plan: selectedPlan.value.id });
-    const { checkout_url } = response.data;
-
-    // Redirect to Stripe Checkout
-    window.location.href = checkout_url;
-  } catch (err: any) {
-    console.error('Stripe initiation failed', err);
-    error.value = err.response?.data?.message || err.message || "Impossible d'initier le paiement Stripe.";
-  } finally {
-    isProcessing.value = null;
-  }
-};
 
 const handleManualUpgrade = () => {
   if (!selectedPlan.value) return;

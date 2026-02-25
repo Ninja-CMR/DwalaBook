@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendPaymentConfirmation = exports.sendExpirationNotification = exports.sendWhatsApp = exports.sendEmail = void 0;
+exports.sendAppointmentReminder = exports.sendPaymentConfirmation = exports.sendExpirationNotification = exports.sendWhatsApp = exports.sendEmail = void 0;
 const nodemailer = __importStar(require("nodemailer"));
 // Email Transporter
 const transporter = nodemailer.createTransport({
@@ -66,43 +66,73 @@ const sendEmail = async (to, subject, html) => {
 };
 exports.sendEmail = sendEmail;
 /**
- * Send WhatsApp notification (requires external API like Twilio)
+ * Send WhatsApp notification using multiple possible providers
  */
 const sendWhatsApp = async (to, message) => {
-    const apiKey = process.env.WHATSAPP_API_KEY;
-    const apiUrl = process.env.WHATSAPP_API_URL;
-    if (!apiKey || !apiUrl) {
-        console.log('[NOTIFICATION] WhatsApp not configured, skipping');
-        return false;
-    }
-    try {
-        // Example for Twilio or similar API
-        // Adjust based on your WhatsApp provider
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                to,
-                from: process.env.WHATSAPP_FROM_NUMBER,
-                body: message
-            })
-        });
-        if (response.ok) {
-            console.log(`[NOTIFICATION] WhatsApp sent to ${to}`);
-            return true;
-        }
-        else {
-            console.error(`[NOTIFICATION] WhatsApp failed to ${to}:`, await response.text());
+    const provider = process.env.WHATSAPP_PROVIDER || 'simulation';
+    // 1. UltraMsg (Very popular in Africa)
+    if (provider === 'ultramsg') {
+        const instanceId = process.env.ULTRAMSG_INSTANCE_ID;
+        const token = process.env.ULTRAMSG_TOKEN;
+        if (!instanceId || !token) {
+            console.error('[NOTIFICATION] UltraMsg not configured');
             return false;
         }
+        try {
+            const response = await fetch(`https://api.ultramsg.com/${instanceId}/messages/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    token,
+                    to,
+                    body: message
+                }).toString()
+            });
+            if (response.ok) {
+                console.log(`[NOTIFICATION] WhatsApp sent via UltraMsg to ${to}`);
+                return true;
+            }
+        }
+        catch (error) {
+            console.error('[NOTIFICATION] UltraMsg request failed', error);
+        }
     }
-    catch (error) {
-        console.error(`[NOTIFICATION] WhatsApp error:`, error);
-        return false;
+    // 2. Twilio
+    if (provider === 'twilio') {
+        const accountSid = process.env.TWILIO_ACCOUNT_SID;
+        const authToken = process.env.TWILIO_AUTH_TOKEN;
+        const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+        if (accountSid && authToken && fromNumber) {
+            try {
+                const formattedTo = to.startsWith('whatsapp:') ? to : `whatsapp:${to}`;
+                const formattedFrom = fromNumber.startsWith('whatsapp:') ? fromNumber : `whatsapp:${fromNumber}`;
+                const auth = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
+                const apiUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': `Basic ${auth}`
+                    },
+                    body: new URLSearchParams({ To: formattedTo, From: formattedFrom, Body: message }).toString()
+                });
+                if (response.ok) {
+                    console.log(`[NOTIFICATION] WhatsApp sent via Twilio to ${to}`);
+                    return true;
+                }
+            }
+            catch (error) {
+                console.error('[NOTIFICATION] Twilio request failed', error);
+            }
+        }
     }
+    // 3. Simulation Fallback (Default)
+    console.log('--- 📱 WHATSAPP SIMULATION ---');
+    console.log(`To: ${to}`);
+    console.log(`Message: ${message}`);
+    console.log(`Provider: ${provider}`);
+    console.log('------------------------------');
+    return true;
 };
 exports.sendWhatsApp = sendWhatsApp;
 /**
@@ -148,15 +178,18 @@ const sendExpirationNotification = async (user, daysLeft, plan) => {
         </div>
     `;
     const whatsappMessage = `
-⚠️ *DwalaBook - Rappel d'Expiration*
+🔔 *DwalaBook - Rappel d'Expiration*
 
-Bonjour ${user.name},
+Bonjour *${user.name}*,
 
-Votre abonnement *${plan.toUpperCase()}* expire dans *${daysLeft} jours*.
+Votre abonnement *${plan.toUpperCase()}* expire dans *${daysLeft} jours*. ⏰
 
-Pour continuer à profiter de toutes les fonctionnalités premium, renouvelez dès maintenant : ${process.env.CLIENT_URL}/pricing
+Pour continuer à gérer vos rendez-vous sans interruption, renouvelez dès maintenant ici : 
+👉 ${process.env.CLIENT_URL}/pricing
 
 Besoin d'aide ? Contactez ${process.env.ADMIN_EMAIL}
+
+_L'équipe DwalaBook_
     `.trim();
     // Send based on user preference
     const results = [];
@@ -215,3 +248,81 @@ const sendPaymentConfirmation = async (user, plan, amount, expiresAt) => {
     return await (0, exports.sendEmail)(user.email, subject, html);
 };
 exports.sendPaymentConfirmation = sendPaymentConfirmation;
+/**
+ * Send appointment reminder
+ */
+const sendAppointmentReminder = async (appointment) => {
+    const dateStr = new Date(appointment.date).toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    const subject = `⏰ Rappel de votre rendez-vous - DwalaBook`;
+    const message = `
+🌟 *RAPPEL RENDEZ-VOUS*
+
+Bonjour *${appointment.customer_name}*,
+
+Ceci est un rappel pour votre rendez-vous de *${appointment.service || 'prestation'}*.
+
+📅 *Date* : ${dateStr}
+👤 *Avec* : ${appointment.staff_name || 'notre équipe'}
+
+Nous avons hâte de vous recevoir ! ✨
+
+_Propulsé par DwalaBook_
+    `.trim();
+    const html = `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; background-color: #fcf9f4; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0;">
+            <div style="background-color: #4a3728; padding: 40px 20px; text-align: center;">
+                <h1 style="color: #DDB892; margin: 0; font-size: 28px; letter-spacing: -1px;">DwalaBook</h1>
+                <p style="color: #fcf9f4; opacity: 0.8; margin-top: 5px; font-weight: bold; text-transform: uppercase; font-size: 12px; tracking: 2px;">Rappel de Rendez-vous</p>
+            </div>
+            <div style="padding: 40px; background-color: white;">
+                <p style="font-size: 18px; color: #4a3728; margin-bottom: 20px;">Bonjour <strong>${appointment.customer_name}</strong>,</p>
+                <p style="color: #64748b; line-height: 1.6;">Ceci est un rappel amical pour votre rendez-vous de demain. Nous avons hâte de vous recevoir !</p>
+                
+                <div style="background-color: #f8fafc; border: 2px dashed #e2e8f0; padding: 25px; border-radius: 15px; margin: 30px 0;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 8px 0; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase;">Service</td>
+                            <td style="padding: 8px 0; color: #4a3728; font-weight: bold; text-align: right;">${appointment.service || 'Prestation'}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase;">Date & Heure</td>
+                            <td style="padding: 8px 0; color: #4a3728; font-weight: bold; text-align: right;">${dateStr}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; color: #94a3b8; font-size: 13px; font-weight: bold; text-transform: uppercase;">Avec</td>
+                            <td style="padding: 8px 0; color: #4a3728; font-weight: bold; text-align: right;">${appointment.staff_name || 'Notre équipe'}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <p style="font-size: 14px; color: #64748b; margin-bottom: 20px;">Si vous avez un empêchement, merci de nous prévenir le plus tôt possible.</p>
+                    <a href="${process.env.CLIENT_URL}" style="display: inline-block; background-color: #8b5e3c; color: white; padding: 15px 30px; border-radius: 12px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 6px rgba(139, 94, 60, 0.2);">Gérer mon rendez-vous</a>
+                </div>
+            </div>
+            <div style="padding: 20px; text-align: center; background-color: #f1f5f9;">
+                <p style="margin: 0; color: #94a3b8; font-size: 12px;">© 2026 DwalaBook. Akwa, Douala, Cameroun.</p>
+            </div>
+        </div>
+    `;
+    const results = [];
+    // All plans get email if email exists
+    if (appointment.email) {
+        results.push(await (0, exports.sendEmail)(appointment.email, subject, html));
+    }
+    // PRO and STARTER get WhatsApp (if number exists)
+    // For now we use the appointment.phone for WhatsApp as well
+    if (appointment.plan !== 'free' && appointment.phone) {
+        // Basic check for phone format might be needed for WhatsApp APIs
+        results.push(await (0, exports.sendWhatsApp)(appointment.phone, message));
+    }
+    return results.some(r => r === true);
+};
+exports.sendAppointmentReminder = sendAppointmentReminder;

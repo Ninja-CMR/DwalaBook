@@ -11,4 +11,6 @@ async function authRoutes(fastify) {
         // Return full user data from token or database
         return { user: req.user };
     });
+    fastify.post('/forgot-password', auth_controller_1.forgotPasswordHandler);
+    fastify.post('/reset-password', auth_controller_1.resetPasswordHandler);
 }

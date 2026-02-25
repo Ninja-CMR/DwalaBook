@@ -13,6 +13,10 @@ const auth_routes_1 = require("./modules/auth/auth.routes");
 const payments_routes_1 = require("./modules/payments/payments.routes");
 const admin_routes_1 = require("./modules/admin/admin.routes");
 const auth_service_1 = require("./modules/auth/auth.service");
+const cron_1 = require("./cron");
+const staff_routes_1 = require("./modules/appointments/staff.routes");
+const inventory_routes_1 = require("./modules/inventory/inventory.routes");
+const public_routes_1 = require("./modules/public/public.routes");
 const server = (0, fastify_1.default)({ logger: true });
 server.register(cors_1.default, {
     origin: '*',
@@ -51,6 +55,9 @@ server.setErrorHandler((error, request, reply) => {
 // Register routes
 server.register(auth_routes_1.authRoutes, { prefix: '/api/auth' });
 server.register(appointments_routes_1.appointmentRoutes, { prefix: '/api/appointments' });
+server.register(staff_routes_1.staffRoutes, { prefix: '/api/staff' });
+server.register(inventory_routes_1.inventoryRoutes, { prefix: '/api/inventory' });
+server.register(public_routes_1.publicRoutes, { prefix: '/api/public' });
 server.register(payments_routes_1.paymentRoutes, { prefix: '/api/payments' });
 server.register(admin_routes_1.adminRoutes, { prefix: '/api/admin' });
 // Graceful shutdown
@@ -60,90 +67,14 @@ server.register(admin_routes_1.adminRoutes, { prefix: '/api/admin' });
         process.exit(0);
     });
 });
-const nodemailer_1 = __importDefault(require("nodemailer"));
-const appointments_service_1 = require("./modules/appointments/appointments.service");
-// Email Transporter Config (Real)
-const transporter = nodemailer_1.default.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-});
-const runReminderCheck = async () => {
-    try {
-        console.log('[CRON] Checking for appointment reminders at', new Date().toLocaleString());
-        const appointments = await (0, appointments_service_1.getAllScheduledAppointments)();
-        const now = new Date();
-        // Find appointments roughly 24 hours from now
-        const upcoming = appointments.filter(a => {
-            const aptDate = new Date(a.date);
-            const diff = aptDate.getTime() - now.getTime();
-            // Reminder for appointments in 24h (+/- 30 min)
-            return diff > 0 && diff <= 24 * 60 * 60 * 1000;
-        });
-        if (upcoming.length > 0) {
-            console.log(`[CRON] Processing ${upcoming.length} reminders.`);
-            for (const apt of upcoming) {
-                const timeStr = new Date(apt.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                const message = `Bonjour ${apt.customer_name}, c'est un rappel pour votre rendez-vous de demain à ${timeStr}. À très vite !`;
-                if (apt.plan === 'free') {
-                    // REAL EMAIL
-                    if (apt.email) {
-                        try {
-                            await transporter.sendMail({
-                                from: `"DwalaBook" <${process.env.SMTP_USER}>`,
-                                to: apt.email,
-                                subject: 'Rappel de votre rendez-vous',
-                                text: message,
-                                html: `<div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                                        <h2 style="color: #8b5e3c;">Bonjour ${apt.customer_name}</h2>
-                                        <p>${message}</p>
-                                        <hr/>
-                                        <small>Envoyé par DwalaBook - Géré par ${apt.staff_name || 'notre équipe'}</small>
-                                       </div>`
-                            });
-                            console.log(`[REAL EMAIL SUCCESS] Email sent to ${apt.email}`);
-                        }
-                        catch (e) {
-                            console.error(`[EMAIL FAILED] to ${apt.email}:`, e.message);
-                        }
-                    }
-                }
-                else {
-                    // REAL WHATSAPP (Via API)
-                    if (apt.phone) {
-                        try {
-                            // Example Integration with a WhatsApp API (e.g. Monetbil or other)
-                            console.log(`[REAL WHATSAPP] 📱 Dispatching to WhatsApp API for ${apt.phone}`);
-                            // In a real integration: 
-                            // await axios.post('WHATSAPP_API_URL', { to: apt.phone, text: message }, { headers: { Authorization: ... } })
-                            console.log(`[CONTENT] "${message}"`);
-                        }
-                        catch (e) {
-                            console.error(`[WHATSAPP FAILED] to ${apt.phone}:`, e.message);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    catch (err) {
-        console.error('[CRON ERROR]:', err);
-    }
-};
 const start = async () => {
     try {
         await (0, databases_1.initDatabase)();
         const PORT = Number(process.env.PORT) || 3000;
         await server.listen({ port: PORT, host: '0.0.0.0' });
         console.log(`Server running on http://localhost:${PORT}`);
-        // Start Reminder Loop (Every 60 seconds)
-        setInterval(runReminderCheck, 60000);
-        // Run immediately on startup for demo
-        runReminderCheck();
+        // Initialize automated jobs (Reminders, Expirations)
+        (0, cron_1.initCronJobs)();
     }
     catch (err) {
         server.log.error(err);

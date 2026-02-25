@@ -10,7 +10,13 @@ const path_1 = __importDefault(require("path"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const DB_FILE = path_1.default.join(__dirname, '../../database.json');
-let data = { users: [], appointments: [], payments: [] };
+let data = {
+    users: [],
+    appointments: [],
+    payments: [],
+    staff: [],
+    inventory: []
+};
 let pool = null;
 if (process.env.DATABASE_URL) {
     console.log('🔌 Connecting to PostgreSQL...');
@@ -88,7 +94,7 @@ const query = async (text, params = []) => {
             // Handle the specialized join query
             if (t.includes('JOIN USERS u ON a.user_id = u.id')) {
                 const rows = data.appointments
-                    .filter(a => a.status === 'scheduled')
+                    .filter(a => a.status === 'scheduled' && !a.last_reminder_sent)
                     .map(a => {
                     const user = data.users.find(u => u.id === a.user_id);
                     return { ...a, plan: user?.plan };
@@ -127,6 +133,16 @@ const query = async (text, params = []) => {
             const rows = data.payments.filter(p => p.user_id === userId);
             return { rows };
         }
+        if (t.includes('FROM STAFF')) {
+            const userId = params[0];
+            const rows = (data.staff || []).filter(s => s.user_id === userId);
+            return { rows };
+        }
+        if (t.includes('FROM INVENTORY')) {
+            const userId = params[0];
+            const rows = (data.inventory || []).filter(i => i.user_id === userId);
+            return { rows };
+        }
     }
     if (t.startsWith('INSERT INTO USERS')) {
         const nextId = data.users.length > 0 ? Math.max(...data.users.map(u => u.id)) + 1 : 1;
@@ -142,7 +158,10 @@ const query = async (text, params = []) => {
             notification_preference: 'email',
             whatsapp_number: null,
             last_notification_sent: null,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
+            business_slug: params[3] || null, // Capture slug if provided
+            reset_token: null,
+            reset_token_expires: null
         };
         data.users.push(newUser);
         await save();
@@ -155,9 +174,11 @@ const query = async (text, params = []) => {
             user_id: params[0],
             customer_name: params[1],
             phone: params[2],
-            email: params[3] || null, // Capture email
+            email: params[3] || null,
             date: params[4],
             staff_name: params[5] || 'Équipe DwalaBook',
+            service: params[6] || null,
+            notes: params[7] || null,
             status: 'scheduled',
             created_at: new Date().toISOString()
         };
@@ -166,14 +187,25 @@ const query = async (text, params = []) => {
         return { rows: [newApt] };
     }
     if (t.startsWith('UPDATE APPOINTMENTS')) {
-        const status = params[0];
-        const id = Number(params[1]);
-        const userId = Number(params[2]);
-        const apt = data.appointments.find(a => a.id === id && a.user_id === userId);
-        if (apt) {
-            apt.status = status;
-            await save();
-            return { rows: [apt] };
+        if (t.includes('SET STATUS =')) {
+            const status = params[0];
+            const id = Number(params[1]);
+            const userId = Number(params[2]);
+            const apt = data.appointments.find(a => a.id === id && a.user_id === userId);
+            if (apt) {
+                apt.status = status;
+                await save();
+                return { rows: [apt] };
+            }
+        }
+        else if (t.includes('SET LAST_REMINDER_SENT =')) {
+            const id = Number(params[0]);
+            const apt = data.appointments.find(a => a.id === id);
+            if (apt) {
+                apt.last_reminder_sent = new Date().toISOString();
+                await save();
+                return { rows: [apt] };
+            }
         }
     }
     if (t.startsWith('UPDATE USERS')) {
@@ -189,6 +221,12 @@ const query = async (text, params = []) => {
                 data.users[userIndex].plan = plan;
                 data.users[userIndex].appointment_limit = limit;
                 data.users[userIndex].plan_expire_at = expireAt;
+            }
+            else if (t.includes('SET NAME =') && t.includes('BUSINESS_SLUG =')) {
+                // Profile update: name, email, business_slug
+                data.users[userIndex].name = params[0];
+                data.users[userIndex].email = params[1];
+                data.users[userIndex].business_slug = params[2];
             }
             else if (t.includes('SET NAME =')) {
                 // Profile update: name, email
@@ -217,6 +255,40 @@ const query = async (text, params = []) => {
         data.payments.push(newPayment);
         await save();
         return { rows: [newPayment] };
+    }
+    if (t.startsWith('INSERT INTO STAFF')) {
+        const nextId = (data.staff || []).length > 0 ? Math.max(...(data.staff || []).map(s => s.id)) + 1 : 1;
+        const newStaff = {
+            id: nextId,
+            user_id: params[0],
+            name: params[1],
+            role: params[2],
+            specialty: params[3] || null,
+            is_active: params[4] ?? true,
+            created_at: new Date().toISOString()
+        };
+        if (!data.staff)
+            data.staff = [];
+        data.staff.push(newStaff);
+        await save();
+        return { rows: [newStaff] };
+    }
+    if (t.startsWith('INSERT INTO INVENTORY')) {
+        const nextId = (data.inventory || []).length > 0 ? Math.max(...(data.inventory || []).map(i => i.id)) + 1 : 1;
+        const newItem = {
+            id: nextId,
+            user_id: params[0],
+            name: params[1],
+            quantity: params[2],
+            alert_threshold: params[3],
+            unit_price: params[4],
+            created_at: new Date().toISOString()
+        };
+        if (!data.inventory)
+            data.inventory = [];
+        data.inventory.push(newItem);
+        await save();
+        return { rows: [newItem] };
     }
     if (t.startsWith('UPDATE PAYMENTS')) {
         // Handle activation by admin
@@ -255,6 +327,52 @@ const query = async (text, params = []) => {
                 return { rows: [p] };
             }
         }
+    }
+    if (t.startsWith('UPDATE STAFF')) {
+        const id = Number(params[params.length - 2]);
+        const userId = Number(params[params.length - 1]);
+        const staffIndex = (data.staff || []).findIndex(s => s.id === id && s.user_id === userId);
+        if (staffIndex !== -1) {
+            data.staff[staffIndex] = {
+                ...data.staff[staffIndex],
+                name: params[0],
+                role: params[1],
+                specialty: params[2],
+                is_active: params[3]
+            };
+            await save();
+            return { rows: [data.staff[staffIndex]] };
+        }
+    }
+    if (t.startsWith('DELETE FROM STAFF')) {
+        const id = params[0];
+        const userId = params[1];
+        data.staff = (data.staff || []).filter(s => !(s.id === id && s.user_id === userId));
+        await save();
+        return { rows: [] };
+    }
+    if (t.startsWith('UPDATE INVENTORY')) {
+        const id = Number(params[params.length - 2]);
+        const userId = Number(params[params.length - 1]);
+        const itemIndex = (data.inventory || []).findIndex(i => i.id === id && i.user_id === userId);
+        if (itemIndex !== -1) {
+            data.inventory[itemIndex] = {
+                ...data.inventory[itemIndex],
+                name: params[0],
+                quantity: params[1],
+                alert_threshold: params[2],
+                unit_price: params[3]
+            };
+            await save();
+            return { rows: [data.inventory[itemIndex]] };
+        }
+    }
+    if (t.startsWith('DELETE FROM INVENTORY')) {
+        const id = params[0];
+        const userId = params[1];
+        data.inventory = (data.inventory || []).filter(i => !(i.id === id && i.user_id === userId));
+        await save();
+        return { rows: [] };
     }
     return { rows: [] };
 };

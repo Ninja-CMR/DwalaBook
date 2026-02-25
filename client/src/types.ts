@@ -7,6 +7,9 @@ export interface User {
     appointment_limit: number;
     plan_expire_at?: string | null;
     business_slug?: string;
+    email_notifications?: boolean;
+    sms_notifications?: boolean;
+    whatsapp_notifications?: boolean;
 }
 
 export interface Appointment {

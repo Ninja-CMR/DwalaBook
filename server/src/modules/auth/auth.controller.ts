@@ -85,14 +85,19 @@ export const upgradeHandler = async (req: FastifyRequest, reply: FastifyReply) =
 
 export const updateProfileHandler = async (req: FastifyRequest, reply: FastifyReply) => {
     try {
-        const { name, email, business_slug } = req.body as { name: string, email: string, business_slug?: string };
+        const { name, email, business_slug, notifications } = req.body as {
+            name: string,
+            email: string,
+            business_slug?: string,
+            notifications?: { email: boolean, sms: boolean, whatsapp: boolean }
+        };
         const user = req.user as { id: number };
 
         if (!name || !email) {
             return reply.code(400).send({ message: 'Nom et email requis' });
         }
 
-        const updated = await updateProfile(user.id, name, email, business_slug);
+        const updated = await updateProfile(user.id, name, email, business_slug, notifications);
         const { password: _, ...userWithoutPassword } = updated;
         return reply.send({ user: userWithoutPassword });
     } catch (err) {

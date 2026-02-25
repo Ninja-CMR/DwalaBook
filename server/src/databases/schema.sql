@@ -14,7 +14,10 @@ CREATE TABLE IF NOT EXISTS users (
     business_slug TEXT UNIQUE,
     reset_token TEXT,
     reset_token_expires TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    email_notifications BOOLEAN DEFAULT TRUE,
+    sms_notifications BOOLEAN DEFAULT FALSE,
+    whatsapp_notifications BOOLEAN DEFAULT FALSE
 );
 
 -- Staff Table

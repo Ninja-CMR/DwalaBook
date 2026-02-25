@@ -15,9 +15,9 @@ const profileForm = reactive({
 });
 
 const notifications = ref({
-    email: true,
-    sms: false,
-    whatsapp: false
+    email: authStore.user?.email_notifications ?? true,
+    sms: authStore.user?.sms_notifications ?? false,
+    whatsapp: authStore.user?.whatsapp_notifications ?? false
 });
 
 const isPro = authStore.user?.plan === 'pro';
@@ -31,7 +31,10 @@ const copyLink = () => {
 const updateProfile = async () => {
     isLoading.value = true;
     try {
-        await api.put('/auth/me', profileForm);
+        await api.put('/auth/me', {
+            ...profileForm,
+            notifications: notifications.value
+        });
         await authStore.fetchUser();
         alert('Profil mis à jour avec succès !');
     } catch (err) {
@@ -139,7 +142,7 @@ const updateProfile = async () => {
                       </div>
                       <div>
                           <p class="font-bold text-[#4a3728]">Rappels Email</p>
-                          <p class="text-xs text-gray-500">Envoyer un email de confirmation aux clients.</p>
+                          <p class="text-xs text-gray-500">Recevoir un email de rappel automatique  de votre prochain RDV.</p>
                       </div>
                   </div>
                   <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
@@ -159,7 +162,7 @@ const updateProfile = async () => {
                               Rappels SMS
                               <span v-if="!isPro" class="px-2 py-0.5 bg-gray-200 text-gray-600 text-[10px] uppercase font-black rounded-md flex items-center gap-1"><Lock class="w-3 h-3" /> PRO</span>
                           </p>
-                          <p class="text-xs text-gray-500">Envoyer un SMS automatique 24h avant.</p>
+                          <p class="text-xs text-gray-500">Recevoir  un SMS automatique 24h avant.</p>
                       </div>
                   </div>
                   
@@ -183,7 +186,7 @@ const updateProfile = async () => {
                               Rappels WhatsApp
                               <span v-if="!isPro" class="px-2 py-0.5 bg-gray-200 text-gray-600 text-[10px] uppercase font-black rounded-md flex items-center gap-1"><Lock class="w-3 h-3" /> PRO</span>
                           </p>
-                          <p class="text-xs text-gray-500">Envoyer une notification WhatsApp.</p>
+                          <p class="text-xs text-gray-500"> Recevoir une notification WhatsApp.</p>
                       </div>
                   </div>
                   

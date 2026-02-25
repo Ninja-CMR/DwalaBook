@@ -314,16 +314,20 @@ _Propulsé par DwalaBook_
     `;
 
     const results = [];
+    const isFree = appointment.plan === 'free';
 
-    // All plans get email if email exists
-    if (appointment.email) {
+    // 1. Email Reminder
+    if (appointment.email && (appointment as any).email_notifications !== false) {
         results.push(await sendEmail(appointment.email, subject, html));
     }
 
-    // PRO and STARTER get WhatsApp (if number exists)
-    // For now we use the appointment.phone for WhatsApp as well
-    if (appointment.plan !== 'free' && appointment.phone) {
-        // Basic check for phone format might be needed for WhatsApp APIs
+    // 2. SMS Reminder (Only for STARTER/PRO)
+    if (!isFree && appointment.phone && (appointment as any).sms_notifications === true) {
+        results.push(await sendWhatsApp(appointment.phone, `[SMS SIMULATION] ${message}`));
+    }
+
+    // 3. WhatsApp Reminder (Only for STARTER/PRO)
+    if (!isFree && appointment.phone && (appointment as any).whatsapp_notifications === true) {
         results.push(await sendWhatsApp(appointment.phone, message));
     }
 

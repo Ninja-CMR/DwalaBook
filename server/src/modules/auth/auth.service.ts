@@ -33,8 +33,21 @@ export const upgradeUserToPlan = async (id: number, plan: 'starter' | 'pro') => 
     return res.rows[0];
 };
 
-export const updateProfile = async (id: number, name: string, email: string, business_slug?: string) => {
-    const res = await query('UPDATE users SET name = $1, email = $2, business_slug = $3 WHERE id = $4 RETURNING *', [name, email, business_slug || null, id]);
+export const updateProfile = async (id: number, name: string, email: string, business_slug?: string, notifications?: { email: boolean, sms: boolean, whatsapp: boolean }) => {
+    let sql = 'UPDATE users SET name = $1, email = $2, business_slug = $3';
+    const params: any[] = [name, email, business_slug || null];
+
+    if (notifications) {
+        sql += ', email_notifications = $4, sms_notifications = $5, whatsapp_notifications = $6';
+        params.push(notifications.email, notifications.sms, notifications.whatsapp);
+        sql += ' WHERE id = $7 RETURNING *';
+        params.push(id);
+    } else {
+        sql += ' WHERE id = $4 RETURNING *';
+        params.push(id);
+    }
+
+    const res = await query(sql, params);
     return res.rows[0];
 };
 

@@ -285,7 +285,7 @@ const plans = [
                 <p class="text-3xl font-black text-slate-900 mb-2">Freemium</p>
                 <p class="text-sm text-slate-500 font-medium mb-8">Idéal pour les auto-entrepreneurs.</p>
                 <ul class="space-y-3 mb-8">
-                  <li v-for="f in plans[0].features" :key="f" class="flex items-center gap-3 text-sm font-bold text-slate-600">
+                  <li v-for="f in plans?.[0]?.features" :key="f" class="flex items-center gap-3 text-sm font-bold text-slate-600">
                     <CheckCircle2 class="w-4 h-4 text-primary" /> {{ f }}
                   </li>
                 </ul>
@@ -313,7 +313,7 @@ const plans = [
                   La solution complète pour les salons professionnels qui veulent passer à la vitesse supérieure.
                 </p>
                 <ul class="space-y-4 mb-12">
-                  <li v-for="f in plans[1].features" :key="f" class="flex items-center gap-4 text-md font-black">
+                  <li v-for="f in plans?.[1]?.features" :key="f" class="flex items-center gap-4 text-md font-black">
                     <div class="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
                        <CheckCircle2 class="w-4 h-4 text-secondary-light" />
                     </div>
@@ -342,7 +342,7 @@ const plans = [
                 </div>
                 <p class="text-slate-900 font-black text-2xl mb-6">Version PRO</p>
                 <ul class="space-y-3 mb-8">
-                  <li v-for="f in plans[2].features" :key="f" class="flex items-center gap-3 text-sm font-bold text-slate-700">
+                  <li v-for="f in plans?.[2]?.features" :key="f" class="flex items-center gap-3 text-sm font-bold text-slate-700">
                     <CheckCircle2 class="w-4 h-4 text-primary" /> {{ f }}
                   </li>
                 </ul>

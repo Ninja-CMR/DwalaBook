@@ -27,6 +27,7 @@ Ce guide détaille la procédure pour mettre votre application en ligne.
 
 2. **Configuration** :
    - **Environment** : `Node`
+   - **Root Directory** : `server` 👈 **Important**
    - **Build Command** : `npm install && npm run build`
    - **Start Command** : `npm start`
    - **Instance Type** : Free
@@ -41,7 +42,7 @@ Ce guide détaille la procédure pour mettre votre application en ligne.
    ULTRAMSG_INSTANCE_ID=votre_instance
    ULTRAMSG_TOKEN=votre_token
    ```
-   > **Note sur la BDD** : Par défaut, l'application utilise `database.json`. Sur Render gratuit, ce fichier est réinitialisé régulièrement. Pour la production, ajoutez `DATABASE_URL` (voir section 4).
+   > **Note sur la BDD** : Par défaut, l'application utilise `server/database.json`. Sur Render gratuit, ce fichier est réinitialisé régulièrement. Pour la production, ajoutez `DATABASE_URL` (voir section 4).
 
 4. **Déployer** : Cliquez sur "Create Web Service".
    - Notez l'URL fournie (ex: `https://dwalabook-api.onrender.com`).
@@ -56,7 +57,7 @@ Ce guide détaille la procédure pour mettre votre application en ligne.
 
 2. **Configuration du dossier** :
    - **Framework Preset** : Vite
-   - **Root Directory** : Cliquez sur "Edit" et sélectionnez le dossier `client`. 👈 **Important**
+   - **Root Directory** : `client` 👈 **Important**
 
 3. **Variables d'Environnement** :
    - `VITE_API_URL` : L'URL de votre backend Render (ex: `https://dwalabook-api.onrender.com`).

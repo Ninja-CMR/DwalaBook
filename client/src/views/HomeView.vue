@@ -70,6 +70,36 @@ const testimonials = [
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marie"
   }
 ];
+
+const plans = [
+  {
+    id: 'free',
+    name: 'Freemium',
+    price: '0',
+    description: 'Pour débuter votre activité sans frais.',
+    features: ['5 rendez-vous / mois', '1 seul utilisateur', 'Statut de base'],
+    buttonText: 'Commencer Gratuitement',
+    highlight: false
+  },
+  {
+    id: 'starter',
+    name: 'Starter',
+    price: '5 000',
+    description: 'L’essentiel pour les salons en croissance.',
+    features: ['Rendez-vous illimités', 'Gestion complète clients', 'Statistiques basiques', 'Support prioritaire'],
+    buttonText: 'Choisir Starter',
+    highlight: true
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: '10 000',
+    description: 'La puissance totale pour votre business.',
+    features: ['Rappels SMS / WhatsApp', 'Multi-employés', 'Gestion du stock', 'Logo personnalisé'],
+    buttonText: 'Choisir PRO',
+    highlight: false
+  }
+];
 </script>
 
 <template>
@@ -213,6 +243,115 @@ const testimonials = [
             </div>
             <h4 class="text-2xl font-black text-slate-900 mb-4">{{ feature.title }}</h4>
             <p class="text-slate-500 leading-relaxed font-medium">{{ feature.description }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Section (Bento Inspired Design) -->
+    <section id="pricing" class="py-32 bg-white overflow-hidden">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          <!-- Section Title Area -->
+          <div class="lg:col-span-4 flex flex-col justify-center space-y-6">
+            <h2 class="text-xs font-black text-primary uppercase tracking-[0.3em]">Tarifs Flexibles</h2>
+            <h3 class="text-4xl lg:text-6xl font-black text-slate-900 leading-none tracking-tighter">
+              Un plan pour chaque <span class="text-primary italic">taille</span>.
+            </h3>
+            <p class="text-lg text-slate-500 font-medium leading-relaxed">
+              Paiement simple par <strong>Mobile Money</strong> (OM/MTN) ou carte Bancaire. Pas d'engagement, annulez quand vous voulez.
+            </p>
+            <div class="pt-4 flex items-center gap-4">
+              <div class="flex -space-x-3">
+                <img v-for="i in 4" :key="i" :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${i*123}`" class="w-10 h-10 rounded-full border-2 border-white bg-slate-100" />
+              </div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">+100 pros nous font confiance</p>
+            </div>
+          </div>
+
+          <!-- Pricing Grid (Bento Style) -->
+          <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 relative">
+            
+            <!-- Freemium Card -->
+            <div class="bg-slate-50 p-8 rounded-[3rem] border border-slate-100 flex flex-col justify-between hover:bg-white hover:shadow-2xl transition-all duration-500 group">
+              <div>
+                <div class="flex justify-between items-start mb-6">
+                  <h4 class="text-xl font-black text-slate-400 uppercase tracking-widest">Base</h4>
+                  <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center border border-slate-200">
+                    <Zap class="w-5 h-5 text-slate-300" />
+                  </div>
+                </div>
+                <p class="text-3xl font-black text-slate-900 mb-2">Freemium</p>
+                <p class="text-sm text-slate-500 font-medium mb-8">Idéal pour les auto-entrepreneurs.</p>
+                <ul class="space-y-3 mb-8">
+                  <li v-for="f in plans[0].features" :key="f" class="flex items-center gap-3 text-sm font-bold text-slate-600">
+                    <CheckCircle2 class="w-4 h-4 text-primary" /> {{ f }}
+                  </li>
+                </ul>
+              </div>
+              <router-link to="/register" class="w-full py-4 bg-white border-2 border-slate-200 text-slate-900 text-center font-black rounded-2xl group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
+                Démarrer
+              </router-link>
+            </div>
+
+            <!-- Starter Card (Highlight) -->
+            <div class="row-span-2 bg-primary-dark p-10 rounded-[3rem] text-white shadow-2xl shadow-primary/40 relative overflow-hidden flex flex-col justify-between group">
+              <!-- Decor -->
+              <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
+              
+              <div>
+                <div class="inline-block px-4 py-1 bg-secondary text-primary-dark rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-8">
+                  Plus Populaire
+                </div>
+                <h4 class="text-5xl font-black mb-2 italic">Starter</h4>
+                <div class="flex items-baseline gap-2 mb-8">
+                  <span class="text-6xl font-black">5.000</span>
+                  <span class="text-sm font-bold opacity-70 uppercase tracking-widest">FCFA/mois</span>
+                </div>
+                <p class="text-primary-light font-medium mb-10 leading-relaxed text-lg">
+                  La solution complète pour les salons professionnels qui veulent passer à la vitesse supérieure.
+                </p>
+                <ul class="space-y-4 mb-12">
+                  <li v-for="f in plans[1].features" :key="f" class="flex items-center gap-4 text-md font-black">
+                    <div class="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                       <CheckCircle2 class="w-4 h-4 text-secondary-light" />
+                    </div>
+                    {{ f }}
+                  </li>
+                </ul>
+              </div>
+
+              <router-link to="/register" class="w-full py-6 bg-secondary text-primary-dark text-center font-black text-xl rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all">
+                Choisir Starter
+              </router-link>
+            </div>
+
+            <!-- Pro Card -->
+            <div class="bg-secondary-light/30 p-8 rounded-[3rem] border border-secondary-light/50 flex flex-col justify-between hover:bg-white hover:shadow-2xl transition-all duration-500 group">
+              <div>
+                <div class="flex justify-between items-start mb-6">
+                  <h4 class="text-xl font-black text-primary uppercase tracking-widest">Master</h4>
+                  <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center border border-secondary">
+                    <Star class="w-5 h-5 text-primary" />
+                  </div>
+                </div>
+                <div class="flex items-baseline gap-2 mb-2">
+                  <span class="text-3xl font-black text-slate-900 text-slate-900">10.000</span>
+                  <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">FCFA/m</span>
+                </div>
+                <p class="text-slate-900 font-black text-2xl mb-6">Version PRO</p>
+                <ul class="space-y-3 mb-8">
+                  <li v-for="f in plans[2].features" :key="f" class="flex items-center gap-3 text-sm font-bold text-slate-700">
+                    <CheckCircle2 class="w-4 h-4 text-primary" /> {{ f }}
+                  </li>
+                </ul>
+              </div>
+              <router-link to="/register" class="w-full py-4 bg-primary text-white text-center font-black rounded-2xl hover:bg-primary-dark transition-all">
+                Passer Pro
+              </router-link>
+            </div>
+
           </div>
         </div>
       </div>

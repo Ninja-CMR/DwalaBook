@@ -54,6 +54,10 @@ server.decorate('authenticate', async (request: any, reply: any) => {
     }
 });
 
+server.get('/', async () => {
+    return { message: 'DwalaBook API is running' };
+});
+
 // Health check & Route Diagnostics
 server.get('/health', async () => {
     // Collect all routes

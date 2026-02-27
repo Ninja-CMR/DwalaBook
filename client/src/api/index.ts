@@ -19,9 +19,10 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
+    timeout: 10000, // 10s timeout to detect dead backends faster
 });
 
-console.log('[API DEBUG] BaseURL:', api.defaults.baseURL);
+console.log('[API DEBUG] BaseURL Configured:', api.defaults.baseURL);
 console.log('[API DEBUG] Current Token:', localStorage.getItem('token') ? 'PRESENT' : 'NULL');
 
 api.interceptors.response.use(
@@ -35,8 +36,10 @@ api.interceptors.response.use(
             if (window.location.hostname === 'localhost') {
                 console.warn('Transient network error detected relative to localhost proxy.');
             } else {
-                console.error('Network Error: Unable to reach the backend at', api.defaults.baseURL);
+                console.error(`Network Error: Impossible de joindre le backend à ${api.defaults.baseURL}. Vérifiez votre connexion ou si le serveur Render est actif.`);
             }
+        } else if (error.response?.status === 404) {
+            console.error(`404 Error: La route ${error.config.url} n'existe pas sur le serveur ${api.defaults.baseURL}`);
         }
         return Promise.reject(error);
     }

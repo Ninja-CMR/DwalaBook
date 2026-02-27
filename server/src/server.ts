@@ -43,9 +43,21 @@ server.decorate('authenticate', async (request: any, reply: any) => {
     }
 });
 
-// Health check
+// Health check & Route Diagnostics
 server.get('/health', async () => {
-    return { status: 'ok', timestamp: new Date().toISOString() };
+    // Collect all routes
+    const routes: string[] = [];
+    server.addHook('onRoute', (routeOptions) => {
+        routes.push(`${routeOptions.method} ${routeOptions.url}`);
+    });
+
+    return {
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'production',
+        // Note: Routes added before this hook won't show up here, 
+        // but we'll print them to the console on start.
+    };
 });
 
 server.setErrorHandler((error: any, request, reply) => {
@@ -79,6 +91,10 @@ const start = async () => {
 
         // Initialize automated jobs (Reminders, Expirations)
         initCronJobs();
+
+        // Log all registered routes for debugging 404s
+        console.log('📝 Registered Routes:');
+        console.log(server.printRoutes());
 
     } catch (err) {
         server.log.error(err);

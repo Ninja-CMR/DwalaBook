@@ -16,7 +16,18 @@ import { publicRoutes } from './modules/public/public.routes';
 const server = fastify({ logger: true });
 
 server.register(cors, {
-    origin: '*',
+    origin: (origin, cb) => {
+        const clientUrl = process.env.CLIENT_URL;
+        // Allow local development and the configured CLIENT_URL
+        if (!origin || (clientUrl && origin.startsWith(clientUrl)) || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            cb(null, true);
+            return;
+        }
+        cb(new Error('Not allowed by CORS'), false);
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 });
 
 server.register(jwt, {

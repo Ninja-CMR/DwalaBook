@@ -19,11 +19,16 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 10000, // 10s timeout to detect dead backends faster
+    timeout: 30000, // 30s timeout to allow Render free tier to spin up
 });
 
 console.log('[API DEBUG] BaseURL Configured:', api.defaults.baseURL);
-console.log('[API DEBUG] Current Token:', localStorage.getItem('token') ? 'PRESENT' : 'NULL');
+const token = localStorage.getItem('token');
+if (token) {
+    console.log('[API DEBUG] Auth Token: PRESENT');
+} else {
+    console.log('[API DEBUG] Auth Token: NOT_FOUND (Normal for Registration/Login)');
+}
 
 api.interceptors.response.use(
     response => {

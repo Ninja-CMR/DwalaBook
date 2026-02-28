@@ -18,12 +18,28 @@ const server = fastify({ logger: true });
 server.register(cors, {
     origin: (origin, cb) => {
         const clientUrl = process.env.CLIENT_URL;
-        // Allow local development and the configured CLIENT_URL
-        if (!origin || (clientUrl && origin.startsWith(clientUrl)) || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+
+        // Helper to normalize URL for comparison (remove trailing slash)
+        const normalize = (url: string) => url.replace(/\/$/, '');
+
+        if (!origin) {
             cb(null, true);
             return;
         }
-        cb(new Error('Not allowed by CORS'), false);
+
+        const normalizedOrigin = normalize(origin);
+        const isAllowed =
+            (clientUrl && normalizedOrigin === normalize(clientUrl)) ||
+            normalizedOrigin.includes('localhost') ||
+            normalizedOrigin.includes('127.0.0.1') ||
+            normalizedOrigin.includes('dwala-book.vercel.app');
+
+        if (isAllowed) {
+            cb(null, true);
+        } else {
+            server.log.warn({ origin }, 'CORS blocked');
+            cb(new Error('Not allowed by CORS'), false);
+        }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

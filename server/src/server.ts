@@ -28,11 +28,14 @@ server.register(cors, {
         }
 
         const normalizedOrigin = normalize(origin);
+        server.log.info({ origin: normalizedOrigin }, 'CORS Check');
+
         const isAllowed =
             (clientUrl && normalizedOrigin === normalize(clientUrl)) ||
             normalizedOrigin.includes('localhost') ||
             normalizedOrigin.includes('127.0.0.1') ||
-            normalizedOrigin.includes('dwala-book.vercel.app');
+            normalizedOrigin.includes('dwala-book') || // Allow all Vercel/Other preview branches with our name
+            normalizedOrigin.endsWith('vercel.app');
 
         if (isAllowed) {
             cb(null, true);
@@ -43,7 +46,9 @@ server.register(cors, {
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 });
 
 server.register(jwt, {

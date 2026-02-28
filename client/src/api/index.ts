@@ -36,15 +36,18 @@ api.interceptors.response.use(
         return response;
     },
     error => {
+        const fullUrl = error.config?.url ? (error.config.baseURL || '') + error.config.url : 'unknown URL';
+
         if (error.code === 'ERR_NETWORK' || error.message.includes('ECONNREFUSED')) {
             isConnectingError.value = true;
             if (window.location.hostname === 'localhost') {
-                console.warn('Transient network error detected relative to localhost proxy.');
+                console.warn(`Transient network error detected relative to localhost proxy for ${fullUrl}.`);
             } else {
-                console.error(`Network Error: Impossible de joindre le backend à ${api.defaults.baseURL}. Vérifiez votre connexion ou si le serveur Render est actif.`);
+                console.error(`Network Error: Impossible de joindre le backend à ${fullUrl}. Vérifiez votre connexion ou si le serveur Render est actif.`);
             }
         } else if (error.response?.status === 404) {
-            console.error(`404 Error: La route ${error.config.url} n'existe pas sur le serveur ${api.defaults.baseURL}`);
+            console.error(`404 Error: La route demandée n'existe pas : ${fullUrl}`);
+            console.error('Détails du serveur:', error.response.data);
         }
         return Promise.reject(error);
     }

@@ -74,21 +74,34 @@ server.get('/', async () => {
     return { message: 'DwalaBook API is running' };
 });
 
-// Health check & Route Diagnostics
-server.get('/health', async () => {
-    // Collect all routes
-    const routes: string[] = [];
-    server.addHook('onRoute', (routeOptions) => {
-        routes.push(`${routeOptions.method} ${routeOptions.url}`);
-    });
+// Root API diagnostic route
+server.get('/api', async () => {
+    return {
+        message: 'DwalaBook API is healthy and reachable',
+        version: '1.0.0',
+        documentation: '/api/health'
+    };
+});
 
+// Health check & Route Diagnostics
+server.get('/api/health', async () => {
     return {
         status: 'ok',
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV || 'production',
-        // Note: Routes added before this hook won't show up here, 
-        // but we'll print them to the console on start.
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        message: 'Use console logs or root path /api to verify connectivity'
     };
+});
+
+// Custom 404 Handler for better diagnostics
+server.setNotFoundHandler((request, reply) => {
+    server.log.warn({ url: request.url, method: request.method }, 'Route not found');
+    reply.status(404).send({
+        message: `Route ${request.method}:${request.url} not found`,
+        suggestion: 'Ensure your baseURL is correct and the route exists. Valid routes are prefixed with /api'
+    });
 });
 
 server.setErrorHandler((error: any, request, reply) => {

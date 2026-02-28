@@ -39,28 +39,43 @@ export const registerHandler = async (req: FastifyRequest, reply: FastifyReply) 
 export const loginHandler = async (req: FastifyRequest, reply: FastifyReply) => {
     try {
         const { email, password } = req.body as any;
+        req.log.info({ email }, 'Login attempt started');
 
         if (!email || !password) {
             return reply.code(400).send({ message: 'Email et mot de passe requis' });
         }
 
+        req.log.info('Fetching user from DB...');
         const user = await findUserByEmail(email);
-        if (!user || !(await verifyPassword(password, user.password))) {
+        req.log.info({ found: !!user }, 'User fetch completed');
+
+        if (!user) {
             return reply.code(401).send({ message: 'Identifiants invalides' });
         }
 
+        req.log.info('Verifying password...');
+        const isMatch = await verifyPassword(password, user.password);
+        req.log.info({ isMatch }, 'Password verification completed');
+
+        if (!isMatch) {
+            return reply.code(401).send({ message: 'Identifiants invalides' });
+        }
+
+        req.log.info('Signing JWT...');
         const token = req.server.jwt.sign({
             id: user.id,
             email: user.email,
             plan: user.plan
         });
+
         const { password: _, ...userWithoutPassword } = user;
+        req.log.info('Login successful, sending response');
         return reply.send({
             token,
             user: userWithoutPassword
         });
     } catch (err) {
-        req.log.error(err);
+        req.log.error(err, 'Login error');
         return reply.code(500).send({ message: 'Erreur lors de la connexion' });
     }
 };

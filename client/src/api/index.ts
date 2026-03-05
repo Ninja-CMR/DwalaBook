@@ -19,7 +19,7 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 30000, // 30s timeout to allow Render free tier to spin up
+    timeout: 60000, // 60s timeout to allow Render free tier to spin up (cold start)
 });
 
 console.log('[API DEBUG] BaseURL Configured:', api.defaults.baseURL);
@@ -30,13 +30,25 @@ if (token) {
     console.log('[API DEBUG] Auth Token: NOT_FOUND (Normal for Registration/Login)');
 }
 
+// Global Response Interceptor
 api.interceptors.response.use(
     response => {
         isConnectingError.value = false;
         return response;
     },
-    error => {
-        const fullUrl = error.config?.url ? (error.config.baseURL || '') + error.config.url : 'unknown URL';
+    async error => {
+        const config = error.config;
+        const fullUrl = config?.url ? (config.baseURL || '') + config.url : 'unknown URL';
+
+        // Auto-retry once for network errors (often triggered by Render spin-up or network changes)
+        if ((error.code === 'ERR_NETWORK' || error.message.includes('ECONNREFUSED')) && !config._retry) {
+            config._retry = true;
+            console.warn(`[API] Erreur réseau détectée sur ${fullUrl}. Tentative de reconnexion automatique (1/1)...`);
+
+            // Wait a small delay before retrying
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            return api(config);
+        }
 
         if (error.code === 'ERR_NETWORK' || error.message.includes('ECONNREFUSED')) {
             isConnectingError.value = true;

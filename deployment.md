@@ -90,3 +90,16 @@ Pour éviter de perdre vos données, migrez vers une vraie base de données.
 - Connectez-vous sur le Frontend (Vercel).
 - Tentez de vous connecter avec `admin@dwalabook.com`.
 - Vérifiez que les données chargent bien.
+
+---
+
+## 6. Maintenance (Éviter l'endormissement de Render)
+
+Sur l'offre gratuite de Render, votre serveur s'endort après 15 minutes d'inactivité. Cela cause un délai lors de la première connexion (le temps que le serveur redémarre).
+
+Pour garder votre backend toujours actif :
+1. Utilisez un service gratuit comme [Cron-job.org](https://cron-job.org/) ou [UptimeRobot](https://uptimerobot.com/).
+2. Configurez une tâche de surveillance (ping) toutes les **14 minutes**.
+3. L'URL à appeler est : `https://votre-backend.onrender.com/api/health`
+
+Cela garantira une réponse instantanée pour vos utilisateurs sans erreur réseau.

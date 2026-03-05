@@ -40,22 +40,36 @@ api.interceptors.response.use(
         const config = error.config;
         const fullUrl = config?.url ? (config.baseURL || '') + config.url : 'unknown URL';
 
-        // Auto-retry once for network errors (often triggered by Render spin-up or network changes)
-        if ((error.code === 'ERR_NETWORK' || error.message.includes('ECONNREFUSED')) && !config._retry) {
-            config._retry = true;
-            console.warn(`[API] Erreur réseau détectée sur ${fullUrl}. Tentative de reconnexion automatique (1/1)...`);
+        // Advanced Retry Logic for Network Errors (Render spin-up handling)
+        const isNetworkError = error.code === 'ERR_NETWORK' ||
+            error.message?.includes('ECONNREFUSED') ||
+            error.message?.includes('Network Error') ||
+            error.message?.includes('NETWORK_CHANGED');
 
-            // Wait a small delay before retrying
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            return api(config);
+        if (isNetworkError && config) {
+            // Track retries in the config object
+            config._retryCount = config._retryCount || 0;
+            const maxRetries = 3;
+
+            if (config._retryCount < maxRetries) {
+                config._retryCount++;
+
+                // Exponential backoff: 2s, 4s, 8s
+                const delay = Math.pow(2, config._retryCount) * 1000;
+
+                console.warn(`[API] Erreur réseau sur ${fullUrl}. Tentative ${config._retryCount}/${maxRetries} dans ${delay / 1000}s...`);
+
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return api(config);
+            }
         }
 
-        if (error.code === 'ERR_NETWORK' || error.message.includes('ECONNREFUSED')) {
+        if (isNetworkError) {
             isConnectingError.value = true;
             if (window.location.hostname === 'localhost') {
                 console.warn(`Transient network error detected relative to localhost proxy for ${fullUrl}.`);
             } else {
-                console.error(`Network Error: Impossible de joindre le backend à ${fullUrl}. Vérifiez votre connexion ou si le serveur Render est actif.`);
+                console.error(`Network Error: Impossible de joindre le backend à ${fullUrl} après plusieurs tentatives. Vérifiez votre connexion ou si le serveur Render est actif.`);
             }
         } else if (error.response?.status === 404) {
             console.error(`404 Error: La route demandée n'existe pas : ${fullUrl}`);
